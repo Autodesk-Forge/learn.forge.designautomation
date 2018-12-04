@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Autodesk Forge - Design Automation</title>
+    <meta charset="utf-8" />
+    <link rel="shortcut icon" href="https://github.com/Autodesk-Forge/learn.forge.viewhubmodels/raw/master/img/favicon.ico">
+    <!-- Common packages: jQuery, Bootstrap -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+</head>
+
+<body>
+    <!-- Fixed navbar by Bootstrap: https://getbootstrap.com/examples/navbar-fixed-top/ -->
+    <nav class="navbar navbar-default navbar-fixed-top">
+        <div class="container-fluid">
+            <ul class="nav navbar-nav left">
+                <li>
+                    <a href="http://developer.autodesk.com" target="_blank">
+                        <img alt="Autodesk Forge" src="//developer.static.autodesk.com/images/logo_forge-2-line.png"
+                            height="20">
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <!-- End of navbar -->
+    <div class="container-fluid" style="margin-top: 70px;">
+        <div class="row">
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label for="width">Width:</label>
+                    <input type="number" class="form-control" id="width" placeholder="Enter new width value">
+                </div>
+                <div class="form-group">
+                    <label for="height">Height:</label>
+                    <input type="number" class="form-control" id="height" placeholder="Enter new height value">
+                </div>
+
+                <div class="form-group">
+                    <label for="inputFile">Input file</label>
+                    <input type="file" class="form-control-file" id="inputFile">
+                </div>
+                <div class="form-group">
+                    <label for="activity">Activity</label>
+                    <select class="form-control" id="activity">
+                        <option>AutoCAD</option>
+                        <option>Inventor</option>
+                        <option>Revit</option>
+                        <option>3ds Max</option>
+                    </select>
+                </div>
+                <div class="radio">
+                    <label class="checkbox-inline"><input type="checkbox" id="clear">Clear existing activities &
+                        appbundles before start. This is useful if you believe there are wrong settings on your account</label>
+                </div>
+                <center><button class="btn btn-primary">Start workitem</button></center>
+            </div>
+            <div class="col-sm-8">
+                output log will appear here...
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
