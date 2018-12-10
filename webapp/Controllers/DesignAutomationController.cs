@@ -86,16 +86,66 @@ namespace forgeSample.Controllers
         /// <returns></returns>
         [HttpPost]
         [Route("api/forge/designautomation/activities")]
-        public async Task<IActionResult> CreateActivity()
+        public async Task<IActionResult> CreateActivity([FromBody]JObject activitySpecs)
         {
-            dynamic oauth = await OAuthController.GetInternalAsync();
+            // basic input validation
+            string zipFileName = activitySpecs["zipFileName"].Value<string>();
+            string engineName = activitySpecs["engine"].Value<string>();
 
             // define Activities API
+            dynamic oauth = await OAuthController.GetInternalAsync();
             ActivitiesApi activitiesApi = new ActivitiesApi();
             activitiesApi.Configuration.AccessToken = oauth.access_token;
 
+            // standard name for this sample
+            string appBundleName = zipFileName + "AppBundle";
+            string activityName = zipFileName + "Activity";
 
-            return Ok();
+            // 
+            PageString activities = await activitiesApi.ActivitiesGetItemsAsync();
+            string qualifiedActivityId = string.Format("{0}.{1}+{2}", NickName, activityName, Alias);
+            if (!activities.Data.Contains(qualifiedActivityId))
+            {
+                // define the activity
+                // ToDo: parametrize for different engines...
+                string commandLine = string.Format(@"$(engine.path)\\{0} /i $(args[inputFile].path) /al $(appbundles[{1}].path)", Executable(engineName), appBundleName);
+                ModelParameter rvtFile = new ModelParameter(false, false, ModelParameter.VerbEnum.Get, "input file", true, "$(inputFile)");
+                ModelParameter parameterInput = new ModelParameter(false, false, ModelParameter.VerbEnum.Get, "input json", false, "params.json");
+                ModelParameter result = new ModelParameter(false, false, ModelParameter.VerbEnum.Put, "output file", true, "outputFile.rvt");
+                Activity activitySpec = new Activity(
+                  new List<string>() { commandLine },
+                  new Dictionary<string, ModelParameter>() {
+                    { "inputFile", rvtFile },
+                    { "inputJson", parameterInput },
+                    { "outputFile", result }
+                  },
+                  engineName,
+                  new List<string>() { string.Format("{0}.{1}+{2}", NickName, appBundleName, Alias) },
+                  null,
+                  activityName,
+                  null,
+                  activityName);
+                Activity newActivity = await activitiesApi.ActivitiesCreateItemAsync(activitySpec);
+
+                // specify the alias for this Activity
+                Alias aliasSpec = new Alias(1, null, Alias);
+                Alias newAlias = await activitiesApi.ActivitiesCreateAliasAsync(activityName, aliasSpec);
+
+                return Ok(new { Activity = qualifiedActivityId });
+            }
+
+            // as this activity points to a AppBundle "dev" alias (which points to the last version of the bundle),
+            // there is no need to update it (for this sample), but this may be extended for different contexts
+            return Ok(new { Activity = "Activity already defined" });
+        }
+
+        private string Executable(string engine)
+        {
+            if (engine.Contains("3dsMax")) return "3dsmaxbatch.exe";
+            if (engine.Contains("AutoCAD")) return "accoreconsole.exe";
+            if (engine.Contains("Inventor")) return "InventorCoreConsole.exe";
+            if (engine.Contains("Revit")) return "revitcoreconsole.exe";          
+            throw new Exception("Invalid engine");
         }
 
         /// <summary>
@@ -109,7 +159,6 @@ namespace forgeSample.Controllers
             // basic input validation
             string zipFileName = appBundleSpecs["zipFileName"].Value<string>();
             string engineName = appBundleSpecs["engine"].Value<string>();
-            if (string.IsNullOrWhiteSpace(zipFileName) || string.IsNullOrWhiteSpace(engineName)) return BadRequest();
 
             // standard name for this sample
             string appBundleName = zipFileName + "AppBundle";
@@ -162,7 +211,7 @@ namespace forgeSample.Controllers
             request.AddHeader("Cache-Control", "no-cache");
             await uploadClient.ExecuteTaskAsync(request);
 
-            return Ok();
+            return Ok(new { AppBundle = qualifiedAppBundleId, Version = newAppVersion.Version });
         }
 
         [HttpGet]

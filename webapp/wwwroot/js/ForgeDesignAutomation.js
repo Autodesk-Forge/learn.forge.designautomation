@@ -53,7 +53,7 @@ function clearAccount() {
         method: 'DELETE',
         success: function () {
             prepareLists();
-            alert('Done');
+            writeLog('Account cleared, all appbundles & activities deleted');
         }
     });
 }
@@ -63,6 +63,16 @@ function defineActivityModal() {
 }
 
 function createAppBundleActivity() {
+    writeLog("Defining appbundle and activity for " + $('#engines').val());
+    $("#defineActivityModal").modal('toggle');
+    createAppBundle(function () {
+        createActivity(function () {
+
+        })
+    });
+}
+
+function createAppBundle(cb) {
     jQuery.ajax({
         url: 'api/forge/designautomation/appbundles',
         method: 'POST',
@@ -71,8 +81,29 @@ function createAppBundleActivity() {
             zipFileName: $('#localBundles').val(),
             engine: $('#engines').val()
         }),
-        success: function () {
-
+        success: function (res) {
+            writeLog('AppBundle: ' + res.appBundle + ', v' + res.version);
+            if (cb) cb();
         }
     });
+}
+
+function createActivity(cb) {
+    jQuery.ajax({
+        url: 'api/forge/designautomation/activities',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({
+            zipFileName: $('#localBundles').val(),
+            engine: $('#engines').val()
+        }),
+        success: function (res) {
+            writeLog('Activity: ' + res.activity);
+            if (cb) cb();
+        }
+    });
+}
+
+function writeLog(text) {
+    $('#outputlog').append('<div>' + text + '</div>');
 }
