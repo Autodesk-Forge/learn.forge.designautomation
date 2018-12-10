@@ -48,13 +48,13 @@ namespace forgeSample.Controllers
         /// <summary>
         /// Prefix for AppBundles and Activities
         /// </summary>
-        public static string NickName
-        {
-            get
-            {
-                return OAuthController.GetAppSetting("FORGE_CLIENT_ID");
-            }
-        }
+        public static string NickName { get { return OAuthController.GetAppSetting("FORGE_CLIENT_ID"); } }
+
+        /// <summary>
+        /// Alias for the app (e.g. DEV, STG, PROD)
+        /// This value may come from an environment variable
+        /// </summary>
+        public static string Alias { get { return "dev"; } }
 
         /// <summary>
         /// Get all Activities defined for this account
@@ -127,38 +127,40 @@ namespace forgeSample.Controllers
             PageString appBundles = await appBundlesApi.AppBundlesGetItemsAsync();
 
             // check if app bundle is already define
-            int version = 1;
-            string alias = "dev";
-            string appBundleId = string.Format("{0}.{1}+{2}", NickName, appBundleName, alias);
-            if (!appBundles.Data.Contains(appBundleId))
+            dynamic newAppVersion;
+            string qualifiedAppBundleId = string.Format("{0}.{1}+{2}", NickName, appBundleName, Alias);
+            if (!appBundles.Data.Contains(qualifiedAppBundleId))
             {
-                // create bundle
+                // create an appbundle (version 1)
                 AppBundle appBundleSpec = new AppBundle(appBundleName, null, engineName, null, null, appBundleName, null, appBundleName);
-                AppBundle newAppBundle = await appBundlesApi.AppBundlesCreateItemAsync(appBundleSpec);
-                if (newAppBundle == null) throw new Exception("Cannot create new app");
+                newAppVersion = await appBundlesApi.AppBundlesCreateItemAsync(appBundleSpec);
+                if (newAppVersion == null) throw new Exception("Cannot create new app");
 
-                // create alias
-                Alias aliasSpec = new Alias(version, null, string.Format(alias, version));
+                // create alias pointing to v1
+                Alias aliasSpec = new Alias(1, null, Alias);
                 Alias newAlias = await appBundlesApi.AppBundlesCreateAliasAsync(appBundleName, aliasSpec);
             }
             else
             {
-                AppBundle existingAppBundle = await appBundlesApi.AppBundlesGetItemAsync(appBundleId);
-                version = (int)existingAppBundle.Version + 1;
-
+                // create new version
                 AppBundle appBundleSpec = new AppBundle(null, null, engineName, null, null, appBundleName, null, null);
-                var newVersion = await appBundlesApi.AppBundlesCreateItemVersionAsync(appBundleId, appBundleSpec);
+                newAppVersion = await appBundlesApi.AppBundlesCreateItemVersionAsync(appBundleName, appBundleSpec);
+                if (newAppVersion == null) throw new Exception("Cannot create new version");
+
+                // update alias pointing to v+1
+                Alias aliasSpec = new Alias(newAppVersion.Version, null, null);
+                Alias newAlias = await appBundlesApi.AppBundlesModifyAliasAsync(appBundleName, Alias, aliasSpec);
             }
 
             // upload the zip with .bundle
-            /*RestClient uploadClient = new RestClient(newApp.UploadParameters.EndpointURL);
+            RestClient uploadClient = new RestClient(newAppVersion.UploadParameters.EndpointURL);
             RestRequest request = new RestRequest(string.Empty, Method.POST);
             request.AlwaysMultipartFormData = true;
-            foreach (KeyValuePair<string, object> x in newApp.UploadParameters.FormData)
+            foreach (KeyValuePair<string, object> x in newAppVersion.UploadParameters.FormData)
                 request.AddParameter(x.Key, x.Value);
             request.AddFile("file", packageZipPath);
             request.AddHeader("Cache-Control", "no-cache");
-            var res = await uploadClient.ExecuteTaskAsync(request);*/
+            await uploadClient.ExecuteTaskAsync(request);
 
             return Ok();
         }
