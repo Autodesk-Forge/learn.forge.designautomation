@@ -9,6 +9,8 @@
     <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <!-- .NET SignalR -->
+    <script src="//unpkg.com/@aspnet/signalr@1.1.0/dist/browser/signalr.min.js"></script>
     <!-- Files for this project -->
     <script src="/js/ForgeDesignAutomation.js"></script>
 </head>
@@ -48,7 +50,7 @@
                     <label for="activity">Existing activities</label>
                     <select class="form-control" id="activity"> </select>
                 </div>
-                <center><button class="btn btn-primary">Start workitem</button></center><br />
+                <center><button class="btn btn-primary" id="startWorkitem">Start workitem</button></center><br />
                 <center><button class="btn btn-danger" id="clearAccount">Clear account</button> <button class="btn btn-success"
                         id="defineActivityShow">Define
                         new activity</button></center>

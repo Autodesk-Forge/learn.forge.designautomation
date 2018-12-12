@@ -22,6 +22,9 @@ $(document).ready(function () {
     $('#clearAccount').click(clearAccount);
     $('#defineActivityShow').click(defineActivityModal);
     $('#createAppBundleActivity').click(createAppBundleActivity);
+    $('#startWorkitem').click(startWorkitem);
+
+    startConnection();
 });
 
 function prepareLists() {
@@ -63,12 +66,13 @@ function defineActivityModal() {
 }
 
 function createAppBundleActivity() {
-    writeLog("Defining appbundle and activity for " + $('#engines').val());
-    $("#defineActivityModal").modal('toggle');
-    createAppBundle(function () {
-        createActivity(function () {
-
-        })
+    startConnection(function () {
+        writeLog("Defining appbundle and activity for " + $('#engines').val());
+        $("#defineActivityModal").modal('toggle');
+        createAppBundle(function () {
+            createActivity(function () {
+            })
+        });
     });
 }
 
@@ -104,6 +108,57 @@ function createActivity(cb) {
     });
 }
 
+function startWorkitem() {
+    var inputFileField = document.getElementById('inputFile');
+    if (inputFileField.files.length == 0) return;
+    var file = inputFileField.files[0];
+    var formData = new FormData();
+    formData.append('inputFile', file);
+    formData.append('data', JSON.stringify({
+        width: $('#width').val(),
+        height: $('#height').val(),
+        height: $('#activity').val(),
+        browerConnectionId: connectionId
+    }));
+
+    startConnection(function () {
+        $.ajax({
+            url: 'api/forge/designautomation/workitems',
+            data: formData,
+            processData: false,
+            contentType: false,
+            type: 'POST',
+            success: function (res) {
+                writeLog('Workitem started: ' + res.workItemId);
+            }
+        });
+    });
+}
+
 function writeLog(text) {
     $('#outputlog').append('<div>' + text + '</div>');
+}
+
+var connection;
+var connectionId;
+
+function startConnection(onReady) {
+    if (connection && connection.connectionState) { if (onReady) onReady(); return; }
+    connection = new signalR.HubConnectionBuilder().withUrl("/api/signalr/designautomation").build();
+    connection.start()
+        .then(function () {
+            connection.invoke('getConnectionId')
+                .then(function (id) {
+                    connectionId = id; // we'll need this...
+                    if (onReady) onReady();
+                });
+        });
+
+    connection.on("onProgress", function (message) {
+        writeLog(message);
+    });
+
+    connection.on("onComplete", function (message) {
+        writeLog(message);
+    });
 }
