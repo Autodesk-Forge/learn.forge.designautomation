@@ -3,14 +3,15 @@
 
 To use Design Automation in general, the following steps are needed:
 
-1. Create the appbundle;
+1. Create the appbundle and test it locally;
+2. Upload the appbundle to the cloud;
 2. Create the activity;
 3. Create the work item;
-4. Send the job and download the results;
+4. Start the job and download the results;
 
 
-## 1. Creating the appbundle
-In Design Automation, the app bundle is the container that could hold custom code, plugin, scripts and any other content that is needed during every workitem execution.
+## 1. Create the appbundle and test it locally
+In Design Automation, a bundle is the container that could hold custom code, plugin, scripts and any other content that is needed during every workitem execution.
 
 The appbundle is a zip archived folder and should finish with `.bundle`. 
 
@@ -184,4 +185,51 @@ All this is an important step in understanding the Design Automation workflow be
 
 ![](./img/activity.png)
 
-and by now, this line should look familiar to you.
+and by now, this line should look familiar to you and we will get back to it later when creating an activity.
+
+
+## 2.Upload the appbundle to the cloud
+Once we have everything set and tested, we can prepare moving this workload to the cloud and make use of Design Automation API.
+
+If locally, we can set `ADSK_APPLICATION_PLUGINS` environment variable, for the local 3ds Max to know where to find our appbundle, in context of Design Automation API, we will have to upload it somewhere in the cloud.
+This is done in 2 steps:
+
+1. Create an App through call to `https://developer.api.autodesk.com/da/us-east/v3/appbundles` by specifying 
+
+	```json
+	{
+	    "engine" : "Autodesk.3dsMax+2018",
+	    "id": "myDemoApp"
+	}
+	```
+
+	the reply from this code will contain a bunch of data, including the security parts:
+	
+	```json
+	
+	{
+	    "uploadParameters": {
+	        "endpointURL": "https://dasprod-store.s3.amazonaws.com",
+	        "formData": {
+	            "key": "apps/Denis/myDemoApp/1",
+	            "content-type": "application/octet-stream",
+	            "policy": "ey...X0=",
+	            "success_action_status": "200",
+	            "success_action_redirect": "",
+	            "x-amz-signature": "01d...292",
+	            "x-amz-credential": "AS...I/20181212/us-east-1/s3/aws4_request/",
+	            "x-amz-algorithm": "AWS4-HMAC-SHA256",
+	            "x-amz-date": "20181212T232929Z",
+	            "x-amz-server-side-encryption": "AES256",
+	            "x-amz-security-token": "FQ...4AU="
+	        }
+	    },
+	    "engine": "Autodesk.3dsMax+2018",
+	    "version": 1,
+	    "id": "Denis.myDemoApp"
+	}
+	```
+
+2. Upload the appbundle to `https://dasprod-store.s3.amazonaws.com` by passing as form-data the key-values received in the pervious request and specified as `formData` object. You will have to add the bundle file as value to the `file` key of this form.
+
+ 
