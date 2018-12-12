@@ -84,17 +84,17 @@ The bundle format is assuring that the plugin is self-contained and will be pick
 > 
 > ```sql
 > fn ListMyObject = 
-(
-	dir = sysInfo.currentdir + "/list.txt"
-	f = (createFile dir)
-	allObjects = $*
-	for OBJ in allObjects do(
-		val1 = OBJ as string
-		val1 += "\n"
-		format val1 to:f
-	)
-)
-```
+>(
+>	dir = sysInfo.currentdir + "/list.txt"
+>	f = (createFile dir)
+>	allObjects = $*
+>	for OBJ in allObjects do(
+>		val1 = OBJ as string
+>		val1 += "\n"
+>		format val1 to:f
+>	)
+>)
+>```
 > we can create a folder with the following structure
 > 
 > ![](./img/my_plugin_content.png)
@@ -143,7 +143,15 @@ This covered the simple use-case with no passed params. In case we need to pass 
 
 ```bash
 
- -mxsString arg    MAXScript String Parameter option, where arg=<key>:<value>                    <value> will be accessible as a MAXScript string in                    <script_file> through the maxOps.mxsCmdLineArgs dictionary                    using <key> as the dictionary key.                    Can be specified multiple times.  -mxsValue arg     MAXScript Value Parameter option, where arg=<key>:<value>                    <value> will be accessible as a MAXScript value in                    <script_file> through the maxOps.mxsCmdLineArgs dictionary
+ -mxsString arg    MAXScript String Parameter option, where arg=<key>:<value>
+                    <value> will be accessible as a MAXScript string in
+                    <script_file> through the maxOps.mxsCmdLineArgs dictionary
+                    using <key> as the dictionary key.
+                    Can be specified multiple times.
+
+  -mxsValue arg     MAXScript Value Parameter option, where arg=<key>:<value>
+                    <value> will be accessible as a MAXScript value in
+                    <script_file> through the maxOps.mxsCmdLineArgs dictionary
 ```
 
 As the documentation mentions, the arguments will be available to the work script through `maxOps.mxsCmdLineArgs` dictionary:
@@ -158,18 +166,18 @@ As the documentation mentions, the arguments will be available to the work scrip
 > 
 > ```sql
 > opts = maxOps.mxsCmdLineArgs
-for k in opts.keys do (
-	format "% == % class: %\n" k opts[k] (classOf opts[k])
-)
-```
+>for k in opts.keys do (
+>	format "% == % class: %\n" k opts[k] (classOf opts[k])
+>)
+>```
 > 
 > the `test.log` file (we specified this file as the last argument) will contain:
 > 
 > ```sql
 > #string1 == Hello class: String
-#value2 == [3,8,2.3] class: Point3
-#value1 == [3,12,22] class: Point3
-
+> #value2 == [3,8,2.3] class: Point3
+> #value1 == [3,12,22] class: Point3
+>
 >```
 
 All this is an important step in understanding the Design Automation workflow because when creating an activity, you have to specify the `commandLine` param, which will look like:
