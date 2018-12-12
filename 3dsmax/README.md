@@ -103,24 +103,24 @@ The bundle format is assuring that the plugin is self-contained and will be pick
 > 
 > ```xml
 > <?xml version="1.0" encoding="utf-8"?>
-<ApplicationPackage 
-					SchemaVersion="1.0"
-					AutodeskProduct="3ds Max"
-					ProductType="Application"
-					ProductCode="3ds Max Design Share Plugin">
-<CompanyDetails />
-	<Components Description="pre-start-up scripts parts">
-		<RuntimeRequirements 
-				OS="Win64" 
-				Platform="3ds Max" 
-				SeriesMin="2018" 
-				SeriesMax="2019" />
-		<ComponentEntry 
-				AppName="ListMyObjects" 
-				Version="1.0.0"  
-				ModuleName="./Content/ListMyObjects.ms" />
-	</Components>
-</ApplicationPackage>
+><ApplicationPackage 
+>					SchemaVersion="1.0"
+>					AutodeskProduct="3ds Max"
+>					ProductType="Application"
+>					ProductCode="3ds Max Design Share Plugin">
+><CompanyDetails />
+>	<Components Description="pre-start-up scripts parts">
+>		<RuntimeRequirements 
+>				OS="Win64" 
+>				Platform="3ds Max" 
+>				SeriesMin="2018" 
+>				SeriesMax="2019" />
+>		<ComponentEntry 
+>				AppName="ListMyObjects" 
+>				Version="1.0.0"  
+>				ModuleName="./Content/ListMyObjects.ms" />
+>	</Components>
+></ApplicationPackage>
 > ```
 > zip it and if our current bundle is located at `C:\my_bundle`, then before invoking the `3dsmaxbatch.exe`, we should write in Command Prompt
 > 
