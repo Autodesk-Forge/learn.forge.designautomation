@@ -9,7 +9,7 @@ using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Events;
 using DesignAutomationFramework;
 
-namespace ClassLibrary1
+namespace Revit_design_automation
 {
     [Transaction(TransactionMode.Manual)]
     [Regeneration(RegenerationOption.Manual)]
