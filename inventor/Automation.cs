@@ -1,20 +1,18 @@
-﻿using System;
+﻿using Inventor;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO.Compression;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using Path = System.IO.Path;
-
-using Inventor;
-using Newtonsoft.Json;
-using File = System.IO.File;
 using System.Threading;
+using File = System.IO.File;
+using Path = System.IO.Path;
 
 namespace sampleinventordesignautomation
 {
-    [ComVisible(true)]
+  [ComVisible(true)]
     public class Automation
     {
         private InventorServer m_server;
