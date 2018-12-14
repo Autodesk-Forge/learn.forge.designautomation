@@ -8,17 +8,19 @@
 
 Launch Visual Studio 2017 Community or Professional, create a new C# class library.
 
-![](https://github.com/MadhukarMoogala/learn.forge.designautomation/blob/master\autocad\images\LaunchVS2017.JPG)
+![](https://github.com/MadhukarMoogala/learn.forge.designautomation/blob/master/autocad/images/LaunchVS2017.JPG)
 
 ### Step2: Install AutoCAD .NET Packages for AutoCAD 2019 from Nuget Package Manager console.
 
-![](https://github.com/MadhukarMoogala/learn.forge.designautomation/blob/master\autocad\images\nugetForAutoCAD.JPG)
+![](https://github.com/MadhukarMoogala/learn.forge.designautomation/blob/master/autocad/images/nugetForAutoCAD.JPG)
 
 ### Step3: Nuget package will install many modules, most of theses modules are not required for Forge Design Automation,  keep the relevant ones and remove the rest.
 
-![](https://github.com/MadhukarMoogala/learn.forge.designautomation/blob/master\autocad\images\ModulesNotRequiredForForge.JPG)
+![](https://github.com/MadhukarMoogala/learn.forge.designautomation/blob/master/autocad/images/ModulesNotRequiredForForge.JPG)
 
-### Step4 :  Write C# .NET application to update parameters Width and Height of a dynamic block reference, refer code.
+### Step4 :  Write C# .NET  application to update parameters Width and Height of a dynamic block reference
+
+Please [refer code.](https://github.com/MadhukarMoogala/learn.forge.designautomation/blob/master/autocad/UpdateWindowParameters/MainEnrty.cs)
 
 ### Step 5:  Debugging locally your .NET module before making and uploading Application Package Bundle to Forge.
 
@@ -53,7 +55,7 @@ Launch Visual Studio 2017 Community or Professional, create a new C# class libra
    D:\Forge\learn.forge.designautomation\autocad\testDrawing\windowNew.dwg
    ```
 
-   ![](https://github.com/MadhukarMoogala/learn.forge.designautomation/blob/master\autocad\images\LocalDebug.JPG)
+   ![](https://github.com/MadhukarMoogala/learn.forge.designautomation/blob/master/autocad/images/LocalDebug.JPG)
 
 ### Step 6: Building AppPackage .bundle
 
@@ -63,7 +65,7 @@ Launch Visual Studio 2017 Community or Professional, create a new C# class libra
    metadata which describes the components of your plugin inside the folder structure, and how they should
    be loaded.
 
-   ![](https://github.com/MadhukarMoogala/learn.forge.designautomation/blob/master\autocad\images\BundleStructure.JPG)
+   ![](https://github.com/MadhukarMoogala/learn.forge.designautomation/blob/master/autocad/images/BundleStructure.JPG)
 
 
 
@@ -108,7 +110,7 @@ Launch Visual Studio 2017 Community or Professional, create a new C# class libra
       </ApplicationPackage>
       ```
 
-4. Wrap the UpdateParameters.bundle to bundle.zip, this can be done is `post build event`, you can install free [7z zip tool](https://www.7-zip.org/)
+4. Wrap the UpdateParameters.bundle to bundle.zip, this can be done is `post build event`, you can install free [7z zip tool](https://www.7-zip.org/), post build script is useful for testing module locally and updating bundle.zip instantaneously.
 
    ```bash
    xcopy /Y $(TargetPath) $(ProjectDir)UpdateWindowParemeters.bundle\Contents\
