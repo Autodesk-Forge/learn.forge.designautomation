@@ -7,8 +7,8 @@
     <ProjectGuid>{9A402F71-D386-4E2D-9582-1E99CE87206D}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>RevitDesignAutomation</RootNamespace>
-    <AssemblyName>RevitDesignAutomation</AssemblyName>
+    <RootNamespace>Autodesk.Forge.Sample.DesignAutomation.Inventor</RootNamespace>
+    <AssemblyName>UpdateRVTParam</AssemblyName>
     <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
@@ -52,9 +52,15 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="PackageContents.xml">
-      <SubType>Designer</SubType>
-    </Content>
+    <Content Include="UpdateRVTParam.bundle\PackageContents.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="UpdateRVTParam.bundle\Contents\Autodesk.Forge.Sample.DesignAutomation.Revit.addin" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>xcopy /Y $(TargetPath) $(ProjectDir)UpdateRVTParam.bundle\Contents\
+if exist $(ProjectDir)../webapp/wwwroot/bundles/UpdateRVTParam.bundle.zip (del  $(ProjectDir)../webapp/wwwroot/bundles/UpdateRVTParam.bundle.zip /q)
+"C:\Program Files\7-Zip\7z.exe" a -tzip $(ProjectDir)../webapp/wwwroot/bundles/UpdateRVTParam.bundle.zip  $(ProjectDir)UpdateRVTParam.bundle\ -xr0!*.pdb</PostBuildEvent>
+  </PropertyGroup>
 </Project>

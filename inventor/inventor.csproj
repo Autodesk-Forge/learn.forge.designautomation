@@ -18,7 +18,7 @@
     <DefaultTargetSchema>IE50</DefaultTargetSchema>
     <DelaySign>false</DelaySign>
     <OutputType>Library</OutputType>
-    <RootNamespace>InvAddIn</RootNamespace>
+    <RootNamespace>Autodesk.Forge.Sample.DesignAutomation.Inventor</RootNamespace>
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
     <StartupObject>
     </StartupObject>
@@ -77,6 +77,9 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyName>UpdateIPTParam</AssemblyName>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="autodesk.inventor.interop, Version=23.0.0.0, Culture=neutral, PublicKeyToken=d84147f8b4276564, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -94,7 +97,7 @@
     <Compile Include="AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Automation.cs" />
+    <Compile Include="Commands.cs" />
     <Compile Include="StandardAddInServer.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -104,10 +107,10 @@
     <None Include="sampleinventordesignautomation.X.manifest" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Autodesk.sampleinventordesignautomation.Inventor.addin" />
+    <None Include="UpdateIPTParam.bundle\Contents\Autodesk.Forge.Sample.DesignAutomation.Inventor.addin" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="PackageContents.xml" />
+    <Content Include="UpdateIPTParam.bundle\PackageContents.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
@@ -115,8 +118,10 @@
     </PreBuildEvent>
     <PostBuildEvent>call "%25VS140COMNTOOLS%25vsvars32"
 			mt.exe -manifest "$(ProjectDir)sampleinventordesignautomation.X.manifest" -outputresource:"$(TargetPath)";#2
-			XCopy "$(TargetPath)" "%AppData%\Autodesk\ApplicationPlugins\$(TargetName)\" /Y /R
-		    XCopy "$(ProjectDir)Autodesk.sampleinventordesignautomation.Inventor.addin" "%AppData%\Autodesk\ApplicationPlugins\$(TargetName)\" /Y /R   
-	</PostBuildEvent>
+
+
+xcopy /Y $(TargetPath) $(ProjectDir)UpdateIPTParam.bundle\Contents\
+if exist $(ProjectDir)../webapp/wwwroot/bundles/UpdateIPTParam.bundle.zip (del  $(ProjectDir)../webapp/wwwroot/bundles/UpdateIPTParam.bundle.zip /q)
+"C:\Program Files\7-Zip\7z.exe" a -tzip $(ProjectDir)../webapp/wwwroot/bundles/UpdateIPTParam.bundle.zip  $(ProjectDir)UpdateIPTParam.bundle\ -xr0!*.pdb</PostBuildEvent>
   </PropertyGroup>
 </Project>

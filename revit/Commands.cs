@@ -5,11 +5,11 @@ using Autodesk.Revit.DB.Events;
 using DesignAutomationFramework;
 using System.Collections.Generic;
 
-namespace RevitDesignAutomation
+namespace Autodesk.Forge.Sample.DesignAutomation.Inventor
 {
   [Transaction(TransactionMode.Manual)]
   [Regeneration(RegenerationOption.Manual)]
-  public class DesignAutomationClass : IExternalDBApplication
+  public class Commands : IExternalDBApplication
   {
     //Path of the project(i.e)project where your Window family files are present
     string projectPath = "\\WindowInWall.rvt";

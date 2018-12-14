@@ -18,7 +18,7 @@
 		SeriesMin="R23.0" SeriesMax="R23.0"/>
     <ComponentEntry
         AppName="UpdateWindowParameters"
-        ModuleName="./Contents/UpdateWindowParameters.dll"
+        ModuleName="./Contents/UpdateDWGParam.dll"
         AppDescription="AutoCAD.IO .net App to update parameters of Dynamic blockreference in AutoCAD Drawing"
         LoadOnCommandInvocation="True"
         LoadOnAutoCADStartup="False">

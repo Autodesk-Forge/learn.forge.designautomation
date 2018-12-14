@@ -7,7 +7,7 @@
         <!-- For Inventor Plug-in, the "Module" attribute must point to the .addin manifest file. -->
         <ComponentEntry LoadOnAutoCADStartup="False" LoadOnCommandInvocation="False"
             AppDescription="Sample plugin for Design Automation"
-            ModuleName="./Contents/Autodesk.sampleinventordesignautomation.Inventor.addin" AppName="sampledesignautomationPlugin"/>
+            ModuleName="./Contents/Autodesk.Forge.Sample.DesignAutomation.Inventor.addin" AppName="Invento for Design Automation"/>
     </Components>
     <EnvironmentVariables>
     </EnvironmentVariables>

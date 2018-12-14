@@ -7,8 +7,8 @@
     <ProjectGuid>{F17BDCE4-8CD6-4DAF-B57A-3A4B8137D736}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>UpdateWindowParameters</RootNamespace>
-    <AssemblyName>UpdateWindowParameters</AssemblyName>
+    <RootNamespace>Autodesk.Forge.Sample.DesignAutomation.AutoCAD</RootNamespace>
+    <AssemblyName>UpdateDWGParam</AssemblyName>
     <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -49,21 +49,22 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="MainEnrty.cs" />
+    <Compile Include="Commands.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="UpdateWindowParameters.bundle\Contents\" />
+    <Content Include="UpdateDWGParam.bundle\PackageContents.xml" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="UpdateWindowParameters.bundle\PackageContents.xml" />
+    <Folder Include="UpdateDWGParam.bundle\Contents\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>
-    </PostBuildEvent>
+    <PostBuildEvent>xcopy /Y $(TargetPath) $(ProjectDir)UpdateDWGParam.bundle\Contents\
+if exist $(ProjectDir)../webapp/wwwroot/bundles/UpdateDWGParam.bundle.zip (del  $(ProjectDir)../webapp/wwwroot/bundles/UpdateDWGParam.bundle.zip /q)
+"C:\Program Files\7-Zip\7z.exe" a -tzip $(ProjectDir)../webapp/wwwroot/bundles/UpdateDWGParam.bundle.zip  $(ProjectDir)UpdateDWGParam.bundle\ -xr0!*.pdb</PostBuildEvent>
   </PropertyGroup>
 </Project>

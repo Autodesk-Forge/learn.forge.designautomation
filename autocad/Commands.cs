@@ -3,10 +3,10 @@ using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.EditorInput;
 using Autodesk.AutoCAD.Runtime;
 
-[assembly: CommandClass(typeof(UpdateWindowParameters.MainEntry))]
+[assembly: CommandClass(typeof(Autodesk.Forge.Sample.DesignAutomation.AutoCAD.MainEntry))]
 [assembly: ExtensionApplication(null)]
 
-namespace UpdateWindowParameters
+namespace Autodesk.Forge.Sample.DesignAutomation.AutoCAD
 {
   public class MainEntry
   {
