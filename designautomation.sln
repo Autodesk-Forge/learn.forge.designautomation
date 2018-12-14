@@ -1,4 +1,4 @@
-
+﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2027
@@ -8,6 +8,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "revit", "revit\revit.csproj", "{9A402F71-D386-4E2D-9582-1E99CE87206D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "inventor", "inventor\inventor.csproj", "{3DC284CE-6572-439D-ADA3-E703FF8498B6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "autocad", "autocad\autocad.csproj", "{F17BDCE4-8CD6-4DAF-B57A-3A4B8137D736}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +29,10 @@ Global
 		{3DC284CE-6572-439D-ADA3-E703FF8498B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3DC284CE-6572-439D-ADA3-E703FF8498B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3DC284CE-6572-439D-ADA3-E703FF8498B6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F17BDCE4-8CD6-4DAF-B57A-3A4B8137D736}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F17BDCE4-8CD6-4DAF-B57A-3A4B8137D736}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F17BDCE4-8CD6-4DAF-B57A-3A4B8137D736}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F17BDCE4-8CD6-4DAF-B57A-3A4B8137D736}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
