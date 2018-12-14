@@ -71,6 +71,7 @@ function createAppBundleActivity() {
         $("#defineActivityModal").modal('toggle');
         createAppBundle(function () {
             createActivity(function () {
+                prepareLists();
             })
         });
     });
@@ -110,7 +111,8 @@ function createActivity(cb) {
 
 function startWorkitem() {
     var inputFileField = document.getElementById('inputFile');
-    if (inputFileField.files.length == 0) return;
+    if (inputFileField.files.length == 0) { alert('Please select an input file'); return; }
+    if ($('#activity').val() === null) { alert('Please select an activity'); return };
     var file = inputFileField.files[0];
     var formData = new FormData();
     formData.append('inputFile', file);

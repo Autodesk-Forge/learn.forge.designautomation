@@ -60,7 +60,7 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>xcopy /Y $(TargetPath) $(ProjectDir)UpdateRVTParam.bundle\Contents\
-if exist $(ProjectDir)../webapp/wwwroot/bundles/UpdateRVTParam.bundle.zip (del  $(ProjectDir)../webapp/wwwroot/bundles/UpdateRVTParam.bundle.zip /q)
-"C:\Program Files\7-Zip\7z.exe" a -tzip $(ProjectDir)../webapp/wwwroot/bundles/UpdateRVTParam.bundle.zip  $(ProjectDir)UpdateRVTParam.bundle\ -xr0!*.pdb</PostBuildEvent>
+if exist $(ProjectDir)../webapp/wwwroot/bundles/UpdateRVTParam.zip (del  $(ProjectDir)../webapp/wwwroot/bundles/UpdateRVTParam.zip /q)
+"C:\Program Files\7-Zip\7z.exe" a -tzip $(ProjectDir)../webapp/wwwroot/bundles/UpdateRVTParam.zip  $(ProjectDir)UpdateRVTParam.bundle\ -xr0!*.pdb</PostBuildEvent>
   </PropertyGroup>
 </Project>

@@ -64,7 +64,7 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>xcopy /Y $(TargetPath) $(ProjectDir)UpdateDWGParam.bundle\Contents\
-if exist $(ProjectDir)../webapp/wwwroot/bundles/UpdateDWGParam.bundle.zip (del  $(ProjectDir)../webapp/wwwroot/bundles/UpdateDWGParam.bundle.zip /q)
-"C:\Program Files\7-Zip\7z.exe" a -tzip $(ProjectDir)../webapp/wwwroot/bundles/UpdateDWGParam.bundle.zip  $(ProjectDir)UpdateDWGParam.bundle\ -xr0!*.pdb</PostBuildEvent>
+if exist $(ProjectDir)../webapp/wwwroot/bundles/UpdateDWGParam.zip (del  $(ProjectDir)../webapp/wwwroot/bundles/UpdateDWGParam.zip /q)
+"C:\Program Files\7-Zip\7z.exe" a -tzip $(ProjectDir)../webapp/wwwroot/bundles/UpdateDWGParam.zip  $(ProjectDir)UpdateDWGParam.bundle\ -xr0!*.pdb</PostBuildEvent>
   </PropertyGroup>
 </Project>

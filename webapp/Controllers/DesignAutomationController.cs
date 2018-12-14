@@ -106,10 +106,11 @@ namespace forgeSample.Controllers
             {
                 // define the activity
                 // ToDo: parametrize for different engines...
-                string commandLine = string.Format(@"$(engine.path)\\{0} /i $(args[inputFile].path) /al $(appbundles[{1}].path)", Executable(engineName), appBundleName);
+                dynamic engineAttributes = EngineAttributes(engineName);
+                string commandLine = string.Format(@"$(engine.path)\\{0} /i $(args[inputFile].path) /al $(appbundles[{1}].path)", engineAttributes.executable, appBundleName);
                 ModelParameter inputFile = new ModelParameter(false, false, ModelParameter.VerbEnum.Get, "input file", true, "$(inputFile)");
                 ModelParameter inputJson = new ModelParameter(false, false, ModelParameter.VerbEnum.Get, "input json", false, "params.json");
-                ModelParameter outputFile = new ModelParameter(false, false, ModelParameter.VerbEnum.Put, "output file", true, "outputFile.rvt");
+                ModelParameter outputFile = new ModelParameter(false, false, ModelParameter.VerbEnum.Put, "output file", true, "outputFile" + engineAttributes.extension);
                 Activity activitySpec = new Activity(
                   new List<string>() { commandLine },
                   new Dictionary<string, ModelParameter>() {
@@ -136,12 +137,12 @@ namespace forgeSample.Controllers
         /// <summary>
         /// Helps identify the engine
         /// </summary>
-        private string Executable(string engine)
+        private dynamic EngineAttributes(string engine)
         {
-            if (engine.Contains("3dsMax")) return "3dsmaxbatch.exe";
-            if (engine.Contains("AutoCAD")) return "accoreconsole.exe";
-            if (engine.Contains("Inventor")) return "InventorCoreConsole.exe";
-            if (engine.Contains("Revit")) return "revitcoreconsole.exe";
+            if (engine.Contains("3dsMax")) return new { executable = "3dsmaxbatch.exe", extension = "3ds" };
+            if (engine.Contains("AutoCAD")) return new { executable = "accoreconsole.exe", extension = "dwg" };
+            if (engine.Contains("Inventor")) return new { executable = "InventorCoreConsole.exe", extension = "ipt" };
+            if (engine.Contains("Revit")) return new { executable = "revitcoreconsole.exe", extension = "rvt" };
             throw new Exception("Invalid engine");
         }
 
@@ -155,7 +156,6 @@ namespace forgeSample.Controllers
             // basic input validation
             string zipFileName = appBundleSpecs["zipFileName"].Value<string>();
             string engineName = appBundleSpecs["engine"].Value<string>();
-            string browerConnectionId = appBundleSpecs["browerConnectionId"].Value<string>();
 
             // standard name for this sample
             string appBundleName = zipFileName + "AppBundle";
