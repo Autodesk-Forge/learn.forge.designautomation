@@ -8,15 +8,15 @@
 
 Launch Visual Studio 2017 Community or Professional, create a new C# class library.
 
-![](D:\Forge\learn.forge.designautomation\autocad\images\LaunchVS2017.JPG)
+![](https://github.com/MadhukarMoogala/learn.forge.designautomation/blob/master\autocad\images\LaunchVS2017.JPG)
 
 ### Step2: Install AutoCAD .NET Packages for AutoCAD 2019 from Nuget Package Manager console.
 
-![](D:\Forge\learn.forge.designautomation\autocad\images\nugetForAutoCAD.JPG)
+![](https://github.com/MadhukarMoogala/learn.forge.designautomation/blob/master\autocad\images\nugetForAutoCAD.JPG)
 
 ### Step3: Nuget package will install many modules, most of theses modules are not required for Forge Design Automation,  keep the relevant ones and remove the rest.
 
-![](D:\Forge\learn.forge.designautomation\autocad\images\ModulesNotRequiredForForge.JPG)
+![](https://github.com/MadhukarMoogala/learn.forge.designautomation/blob/master\autocad\images\ModulesNotRequiredForForge.JPG)
 
 ### Step4 :  Write C# .NET application to update parameters Width and Height of a dynamic block reference, refer code.
 
@@ -29,7 +29,8 @@ Launch Visual Studio 2017 Community or Professional, create a new C# class libra
 3. Go to Command Line arguments, 
 
    ```
-   /i "D:\Forge\learn.forge.designautomation\autocad\testDrawing\WindowTest.dwg" /s "D:\Forge\learn.forge.designautomation\autocad\testDrawing\window.scr"
+   /i "D:\Forge\learn.forge.designautomation/learn.forge.designautomation/blob/master\autocad\testDrawing\WindowTest.dwg"
+   /s "D:\Forge\learn.forge.designautomation/learn.forge.designautomation/blob/master\autocad\testDrawing\window.scr"
    ```
 
    /i: input drawing
@@ -52,7 +53,7 @@ Launch Visual Studio 2017 Community or Professional, create a new C# class libra
    D:\Forge\learn.forge.designautomation\autocad\testDrawing\windowNew.dwg
    ```
 
-   ![](D:\Forge\learn.forge.designautomation\autocad\images\LocalDebug.JPG)
+   ![](https://github.com/MadhukarMoogala/learn.forge.designautomation/blob/master\autocad\images\LocalDebug.JPG)
 
 ### Step 6: Building AppPackage .bundle
 
@@ -62,7 +63,7 @@ Launch Visual Studio 2017 Community or Professional, create a new C# class libra
    metadata which describes the components of your plugin inside the folder structure, and how they should
    be loaded.
 
-   ![](D:\Forge\learn.forge.designautomation\autocad\images\BundleStructure.JPG)
+   ![](https://github.com/MadhukarMoogala/learn.forge.designautomation/blob/master\autocad\images\BundleStructure.JPG)
 
 
 
