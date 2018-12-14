@@ -1,13 +1,14 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
 <RevitAddIns>
   <AddIn Type="DBApplication">
-    <Name>Update window parameters</Name>
-    <Assembly>.\Revit Design Automation.dll</Assembly>
-    <AddInId>d3fe1983-8f10-4983-98e2-c3cc332fc978</AddInId>
-    <FullClassName>Revit_Design_Automation.Class1</FullClassName>
-    <Description>"Update window parameters"</Description>
-    <VendorId>FPD</VendorId>
-    <VendorDescription>
-    </VendorDescription>
+    <Name>Modify Window Parameters</Name>
+    <FullClassName>RevitDesignAutomation.DesignAutomationClass</FullClassName>
+    <Text>RevitDesignAutomation</Text>
+    <Description>RevitDesignAutomation</Description>
+    <VisibilityMode>AlwaysVisible</VisibilityMode>
+    <Assembly>.\RevitDesignAutomation.dll</Assembly>
+    <AddInId>000BD853-36E4-461f-9171-C5ACEDA4E723</AddInId>
+    <VendorId>ADSK</VendorId>
+    <VendorDescription>Autodesk, Inc, www.autodesk.com</VendorDescription>
   </AddIn>
 </RevitAddIns>
