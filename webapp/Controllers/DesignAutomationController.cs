@@ -110,7 +110,7 @@ namespace forgeSample.Controllers
                 string commandLine = string.Format(@"$(engine.path)\\{0} /i $(args[inputFile].path) /al $(appbundles[{1}].path)", engineAttributes.executable, appBundleName);
                 ModelParameter inputFile = new ModelParameter(false, false, ModelParameter.VerbEnum.Get, "input file", true, "$(inputFile)");
                 ModelParameter inputJson = new ModelParameter(false, false, ModelParameter.VerbEnum.Get, "input json", false, "params.json");
-                ModelParameter outputFile = new ModelParameter(false, false, ModelParameter.VerbEnum.Put, "output file", true, "outputFile" + engineAttributes.extension);
+                ModelParameter outputFile = new ModelParameter(false, false, ModelParameter.VerbEnum.Put, "output file", true, "outputFile." + engineAttributes.extension);
                 Activity activitySpec = new Activity(
                   new List<string>() { commandLine },
                   new Dictionary<string, ModelParameter>() {
@@ -230,7 +230,7 @@ namespace forgeSample.Controllers
             JObject workItemData = JObject.Parse(input.data);
             string widthParam = workItemData["width"].Value<string>();
             string heigthParam = workItemData["height"].Value<string>();
-            string activityName = workItemData["activityName"].Value<string>();
+            string activityName = string.Format("{0}.{1}", NickName, workItemData["activityName"].Value<string>());
             string browerConnectionId = workItemData["browerConnectionId"].Value<string>();
 
             // save the file on the server
@@ -245,13 +245,18 @@ namespace forgeSample.Controllers
             string bucketKey = NickName.ToLower() + "_designautomation";
             BucketsApi buckets = new BucketsApi();
             buckets.Configuration.AccessToken = oauth.access_token;
-            try { PostBucketsPayload bucketPayload = new PostBucketsPayload(bucketKey, null, PostBucketsPayload.PolicyKeyEnum.Transient); } catch { }; // in case bucket already exists
+            try
+            {
+                PostBucketsPayload bucketPayload = new PostBucketsPayload(bucketKey, null, PostBucketsPayload.PolicyKeyEnum.Transient);
+                await buckets.CreateBucketAsync(bucketPayload, "US");
+            }
+            catch { }; // in case bucket already exists
             // 2. upload inputFile
             string inputFileNameOSS = string.Format("{0}_input_{1}", DateTime.Now.ToString("yyyyMMddhhmmss"), input.inputFile.FileName); // avoid overriding
             ObjectsApi objects = new ObjectsApi();
             objects.Configuration.AccessToken = oauth.access_token;
             using (StreamReader streamReader = new StreamReader(fileSavePath))
-                await objects.UploadObjectAsync(bucketKey, input.inputFile.FileName, (int)streamReader.BaseStream.Length, streamReader.BaseStream, "application/octet-stream");
+                await objects.UploadObjectAsync(bucketKey, inputFileNameOSS, (int)streamReader.BaseStream.Length, streamReader.BaseStream, "application/octet-stream");
 
             // prepare workitem arguments
             // 1. input file
@@ -305,15 +310,25 @@ namespace forgeSample.Controllers
         /// </summary>
         [HttpPost]
         [Route("/api/forge/callback/designautomation")]
-        public IActionResult OnCallback(string id, [FromBody]dynamic body)
+        public async Task<IActionResult> OnCallback(string id, [FromBody]dynamic body)
         {
             try
             {
                 // your webhook should return immediately! we can use Hangfire to schedule a job
                 JObject bodyJson = JObject.Parse((string)body.ToString());
-                BackgroundJob.Schedule(() => DesignAutomationHub.OnComplete(_hubContext, id, bodyJson.ToString()), TimeSpan.FromSeconds(1));
+                await _hubContext.Clients.Client(id).SendAsync("onComplete", bodyJson.ToString());
+
+                var client = new RestClient(bodyJson["reportUrl"].Value<string>());
+                var request = new RestRequest(string.Empty);
+
+                byte[] bs = client.DownloadData(request);
+                string report = System.Text.Encoding.Default.GetString(bs);
+                await _hubContext.Clients.Client(id).SendAsync("onComplete", report);
             }
-            catch { }
+            catch (Exception e)
+            {
+
+            }
 
             // ALWAYS return ok (200)
             return Ok();
@@ -376,13 +391,5 @@ namespace forgeSample.Controllers
     public class DesignAutomationHub : Microsoft.AspNetCore.SignalR.Hub
     {
         public string GetConnectionId() { return Context.ConnectionId; }
-
-        /// <summary>
-        /// Notify the client that the workitem is complete
-        /// </summary>
-        public async static Task OnComplete(IHubContext<DesignAutomationHub> context, string connectionId, string message)
-        {
-            await context.Clients.Client(connectionId).SendAsync("onComplete", message);
-        }
     }
 }
