@@ -3,7 +3,9 @@ using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Events;
 using DesignAutomationFramework;
+using Newtonsoft.Json;
 using System.Collections.Generic;
+using System.IO;
 
 namespace Autodesk.Forge.Sample.DesignAutomation.Inventor
 {
@@ -12,41 +14,29 @@ namespace Autodesk.Forge.Sample.DesignAutomation.Inventor
   public class Commands : IExternalDBApplication
   {
     //Path of the project(i.e)project where your Window family files are present
-    string projectPath = "\\WindowInWall.rvt";
-
-    //The parameters value from the user
-    double windowHeight = 5;
-    double windowWidth = 10;
-
-    public ExternalDBApplicationResult OnShutdown(ControlledApplication application)
-    {
-      return ExternalDBApplicationResult.Succeeded;
-    }
+    string OUTPUT_FILE = "OutputFile.rvt";
 
     public ExternalDBApplicationResult OnStartup(ControlledApplication application)
     {
-      application.ApplicationInitialized += HandleApplicationInitializedEvent;
+      DesignAutomationBridge.DesignAutomationReadyEvent += HandleDesignAutomationReadyEvent;
       return ExternalDBApplicationResult.Succeeded;
     }
 
-    private void HandleApplicationInitializedEvent(object sender, ApplicationInitializedEventArgs e)
+    private void HandleDesignAutomationReadyEvent(object sender, DesignAutomationReadyEventArgs e)
     {
-      Autodesk.Revit.ApplicationServices.Application app = sender as Autodesk.Revit.ApplicationServices.Application;
-      EditWindowParametersMethod(app, projectPath);
+      e.Succeeded = true;
+      EditWindowParametersMethod(e.DesignAutomationData.RevitDoc);
     }
 
-    private void EditWindowParametersMethod(Application app, string projectPath)
+    private void EditWindowParametersMethod(Document doc)
     {
-      // Get the data of the project file(i.e)the project in which families are present
-      DesignAutomationData data = new DesignAutomationData(app, projectPath);
-      //get the revit project document
-      Document doc = data.RevitDoc;
+      InputParams inputParameters = JsonConvert.DeserializeObject<InputParams>(File.ReadAllText("params.json"));
 
       //Modifying the window parameters
       //Open transaction
-      using (Transaction windowTransaction = new Transaction(doc))
+      using (Transaction trans = new Transaction(doc))
       {
-        windowTransaction.Start("Update window parameters");
+        trans.Start("Update window parameters");
 
         //Filter for windows
         FilteredElementCollector WindowCollector = new FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_Windows).WhereElementIsNotElementType();
@@ -57,16 +47,16 @@ namespace Autodesk.Forge.Sample.DesignAutomation.Inventor
           Element Window = doc.GetElement(windowId);
           FamilyInstance FamInst = Window as FamilyInstance;
           FamilySymbol FamSym = FamInst.Symbol;
-          SetElementParameter(FamSym, BuiltInParameter.WINDOW_HEIGHT, windowHeight);
-          SetElementParameter(FamSym, BuiltInParameter.WINDOW_WIDTH, windowWidth);
+          SetElementParameter(FamSym, BuiltInParameter.WINDOW_HEIGHT, inputParameters.Height);
+          SetElementParameter(FamSym, BuiltInParameter.WINDOW_WIDTH, inputParameters.Width);
         }
 
         //To save all the changes commit the transaction 
-        windowTransaction.Commit();
+        trans.Commit();
       }
 
       //Save the updated file by overwriting the existing file
-      ModelPath ProjectModelPath = ModelPathUtils.ConvertUserVisiblePathToModelPath(projectPath);
+      ModelPath ProjectModelPath = ModelPathUtils.ConvertUserVisiblePathToModelPath(OUTPUT_FILE);
       SaveAsOptions SAO = new SaveAsOptions();
       SAO.OverwriteExistingFile = true;
 
@@ -74,9 +64,20 @@ namespace Autodesk.Forge.Sample.DesignAutomation.Inventor
       doc.SaveAs(ProjectModelPath, SAO);
     }
 
+    public ExternalDBApplicationResult OnShutdown(ControlledApplication application)
+    {
+      return ExternalDBApplicationResult.Succeeded;
+    }
+
     private void SetElementParameter(FamilySymbol FamSym, BuiltInParameter paraMeter, double parameterValue)
     {
       FamSym.get_Parameter(paraMeter).Set(parameterValue);
+    }
+
+    public class InputParams
+    {
+      public double Width { get; set; }
+      public double Height { get; set; }
     }
   }
 }

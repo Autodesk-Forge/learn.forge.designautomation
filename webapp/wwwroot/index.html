@@ -15,7 +15,7 @@
     <script src="/js/ForgeDesignAutomation.js"></script>
 </head>
 
-<body>
+<body style="height: 100%;">
     <!-- Fixed navbar by Bootstrap: https://getbootstrap.com/examples/navbar-fixed-top/ -->
     <nav class="navbar navbar-default navbar-fixed-top">
         <div class="container-fluid">
@@ -55,8 +55,8 @@
                         id="defineActivityShow">Define
                         new activity</button></center>
             </div>
-            <div class="col-sm-8" id="outputlog">
-                
+            <div class="col-sm-8">
+                <pre id="outputlog" style="height: calc(100vh - 120px);; overflow-y: scroll;"></pre>
             </div>
         </div>
     </div>

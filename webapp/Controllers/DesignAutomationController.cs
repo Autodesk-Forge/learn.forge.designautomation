@@ -25,6 +25,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RestSharp;
 using System;
@@ -257,6 +258,7 @@ namespace forgeSample.Controllers
             objects.Configuration.AccessToken = oauth.access_token;
             using (StreamReader streamReader = new StreamReader(fileSavePath))
                 await objects.UploadObjectAsync(bucketKey, inputFileNameOSS, (int)streamReader.BaseStream.Length, streamReader.BaseStream, "application/octet-stream");
+            System.IO.File.Delete(fileSavePath);// delete server copy
 
             // prepare workitem arguments
             // 1. input file
@@ -272,7 +274,7 @@ namespace forgeSample.Controllers
             dynamic inputJson = new JObject();
             inputJson.Width = widthParam;
             inputJson.Height = heigthParam;
-            JObject inputJsonArgument = new JObject { new JProperty("url", "data:application/json, " + inputJson.ToString()) };
+            JObject inputJsonArgument = new JObject { new JProperty("url", "data:application/json, " + ((JObject)inputJson).ToString(Formatting.None).Replace("\"", "'")) }; // ToDo: need to improve this
             // 3. output file
             string outputFileNameOSS = string.Format("{0}_output_{1}", DateTime.Now.ToString("yyyyMMddhhmmss"), input.inputFile.FileName); // avoid overriding
             JObject outputFileArgument = new JObject
@@ -321,14 +323,13 @@ namespace forgeSample.Controllers
                 var client = new RestClient(bodyJson["reportUrl"].Value<string>());
                 var request = new RestRequest(string.Empty);
 
+                Console.WriteLine(id);
+
                 byte[] bs = client.DownloadData(request);
                 string report = System.Text.Encoding.Default.GetString(bs);
                 await _hubContext.Clients.Client(id).SendAsync("onComplete", report);
             }
-            catch (Exception e)
-            {
-
-            }
+            catch (Exception e) { }
 
             // ALWAYS return ok (200)
             return Ok();
