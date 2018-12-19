@@ -120,7 +120,7 @@
 			mt.exe -manifest "$(ProjectDir)sampleinventordesignautomation.X.manifest" -outputresource:"$(TargetPath)";#2
 
 
-xcopy /Y $(TargetPath) $(ProjectDir)UpdateIPTParam.bundle\Contents\
+xcopy /Y /F $(TargetDir)*.dll $(ProjectDir)UpdateIPTParam.bundle\Contents\
 if exist $(ProjectDir)../webapp/wwwroot/bundles/UpdateIPTParam.zip (del  $(ProjectDir)../webapp/wwwroot/bundles/UpdateIPTParam.zip /q)
 "C:\Program Files\7-Zip\7z.exe" a -tzip $(ProjectDir)../webapp/wwwroot/bundles/UpdateIPTParam.zip  $(ProjectDir)UpdateIPTParam.bundle\ -xr0!*.pdb</PostBuildEvent>
   </PropertyGroup>

@@ -21,9 +21,9 @@
         ModuleName="./Contents/UpdateDWGParam.dll"
         AppDescription="AutoCAD.IO .net App to update parameters of Dynamic blockreference in AutoCAD Drawing"
         LoadOnCommandInvocation="True"
-        LoadOnAutoCADStartup="False">
+        LoadOnAutoCADStartup="True">
       <Commands GroupName="FPDCommands">
-        <Command Global="UpdateWindowParam" Local="UpdateWindowParam" />
+        <Command Global="UpdateWindowParam" Local="UpdateWindowParam"/>
       </Commands>
     </ComponentEntry>
   </Components>

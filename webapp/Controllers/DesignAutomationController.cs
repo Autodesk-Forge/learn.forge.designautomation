@@ -20,7 +20,6 @@ using Autodesk.Forge;
 using Autodesk.Forge.DesignAutomation.v3;
 using Autodesk.Forge.Model;
 using Autodesk.Forge.Model.DesignAutomation.v3;
-using Hangfire;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -108,7 +107,7 @@ namespace forgeSample.Controllers
                 // define the activity
                 // ToDo: parametrize for different engines...
                 dynamic engineAttributes = EngineAttributes(engineName);
-                string commandLine = string.Format(@"$(engine.path)\\{0} /i $(args[inputFile].path) /al $(appbundles[{1}].path)", engineAttributes.executable, appBundleName);
+                string commandLine = string.Format(@"$(engine.path)\\{0} /i $(args[inputFile].path) /al $(appbundles[{1}].path) /s $(settings[script].path)", engineAttributes.executable, appBundleName);
                 ModelParameter inputFile = new ModelParameter(false, false, ModelParameter.VerbEnum.Get, "input file", true, "$(inputFile)");
                 ModelParameter inputJson = new ModelParameter(false, false, ModelParameter.VerbEnum.Get, "input json", false, "params.json");
                 ModelParameter outputFile = new ModelParameter(false, false, ModelParameter.VerbEnum.Put, "output file", true, "outputFile." + engineAttributes.extension);
@@ -119,10 +118,11 @@ namespace forgeSample.Controllers
                     { "inputJson", inputJson },
                     { "outputFile", outputFile }
                   },
-                  engineName, new List<string>() { string.Format("{0}.{1}+{2}", NickName, appBundleName, Alias) }, null,
+                  engineName, new List<string>() { string.Format("{0}.{1}+{2}", NickName, appBundleName, Alias) },
+                  new Dictionary<string, dynamic>() { { "script", new { value = "UpdateParam\n" }  } },
                   string.Format("Description for {0}", activityName), null, activityName);
-                Activity newActivity = await activitiesApi.ActivitiesCreateItemAsync(activitySpec);
-
+                  Activity newActivity = await activitiesApi.ActivitiesCreateItemAsync(activitySpec);
+ 
                 // specify the alias for this Activity
                 Alias aliasSpec = new Alias(1, null, Alias);
                 Alias newAlias = await activitiesApi.ActivitiesCreateAliasAsync(activityName, aliasSpec);

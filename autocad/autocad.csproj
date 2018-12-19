@@ -39,14 +39,12 @@
       <HintPath>packages\AutoCAD.NET.Model.23.0.0\lib\net47\AcDbMgd.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.12.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Commands.cs" />
@@ -63,7 +61,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy /Y $(TargetPath) $(ProjectDir)UpdateDWGParam.bundle\Contents\
+    <PostBuildEvent>xcopy /Y /F $(TargetDir)*.dll $(ProjectDir)UpdateDWGParam.bundle\Contents\
 if exist $(ProjectDir)../webapp/wwwroot/bundles/UpdateDWGParam.zip (del  $(ProjectDir)../webapp/wwwroot/bundles/UpdateDWGParam.zip /q)
 "C:\Program Files\7-Zip\7z.exe" a -tzip $(ProjectDir)../webapp/wwwroot/bundles/UpdateDWGParam.zip  $(ProjectDir)UpdateDWGParam.bundle\ -xr0!*.pdb</PostBuildEvent>
   </PropertyGroup>

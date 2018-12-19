@@ -33,6 +33,7 @@
   <ItemGroup>
     <Reference Include="DesignAutomationBridge">
       <HintPath>.\DesignAutomationBridge.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.12.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
@@ -58,7 +59,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy /Y $(TargetPath) $(ProjectDir)UpdateRVTParam.bundle\Contents\
+    <PostBuildEvent>xcopy /Y /F $(TargetDir)*.dll $(ProjectDir)UpdateRVTParam.bundle\Contents\
 if exist $(ProjectDir)../webapp/wwwroot/bundles/UpdateRVTParam.zip (del  $(ProjectDir)../webapp/wwwroot/bundles/UpdateRVTParam.zip /q)
 "C:\Program Files\7-Zip\7z.exe" a -tzip $(ProjectDir)../webapp/wwwroot/bundles/UpdateRVTParam.zip  $(ProjectDir)UpdateRVTParam.bundle\ -xr0!*.pdb</PostBuildEvent>
   </PropertyGroup>

@@ -32,9 +32,9 @@
             "env": {
                 "ASPNETCORE_ENVIRONMENT": "Development",
                 "ASPNETCORE_URLS": "http://localhost:3000",
-                "FORGE_CLIENT_ID": "LSgUnA1wDczIHGZ2kb3dlGgTz8Ykl6Np",
-                "FORGE_CLIENT_SECRET": "1klH6ww1CmsmbgAc",
-                "FORGE_CALLBACK_URL": "http://localhost:3000/api/forge/callback/oauth"
+                "FORGE_CLIENT_ID": "iGYcMPAi2Ed1mv6VusOmG4PCU9AdiOS8",
+                "FORGE_CLIENT_SECRET": "4u7z8iG20RKxQ7cz",
+                "FORGE_WEBHOOK_CALLBACK_HOST": "http://8a5ce6e2.ngrok.io"
             },
             "sourceFileMap": {
                 "/Views": "${workspaceFolder}/Views"
