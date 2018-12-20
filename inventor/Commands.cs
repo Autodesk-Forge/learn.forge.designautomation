@@ -3,12 +3,8 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading;
-using File = System.IO.File;
-using Path = System.IO.Path;
 
 namespace Autodesk.Forge.Sample.DesignAutomation.Inventor
 {
@@ -24,7 +20,7 @@ namespace Autodesk.Forge.Sample.DesignAutomation.Inventor
     public void Run(Document doc)
     {
       LogTrace("Run called with {0}", doc.DisplayName);
-      File.AppendAllText("output.txt", "Document name: " + doc.DisplayName);
+      RunWithArguments(doc);
     }
 
     private class HeartBeat : IDisposable
@@ -72,18 +68,12 @@ namespace Autodesk.Forge.Sample.DesignAutomation.Inventor
       private long ticks;
     }
 
-    public void RunWithArguments(Document doc, NameValueMap map)
+    public void RunWithArguments(Document doc)
     {
-      // write diagnostics data
-      LogInputData(doc, map);
-
-      var pathName = doc.FullFileName;
-      LogTrace("Processing " + pathName);
-
       try
       {
         // load processing parameters
-        string paramsJson = GetParametersToChange(map);
+        string paramsJson = System.IO.File.ReadAllText("params.json");
 
         // update parameters in the doc
         // start HeartBeat around ChangeParameters, it could be a long operation
@@ -93,42 +83,27 @@ namespace Autodesk.Forge.Sample.DesignAutomation.Inventor
         }
 
         // generate outputs
-        var docDir = Path.GetDirectoryName(doc.FullFileName);
+        var docDir = System.IO.Path.GetDirectoryName(doc.FullFileName);
 
         var documentType = doc.DocumentType;
         if (documentType == DocumentTypeEnum.kPartDocumentObject)
         {
-          var fileName = Path.Combine(docDir, "Outputfile.ipt"); // the name must be in sync with OutputIpt localName in Activity
-          LogTrace("Saving " + fileName);
+          var fileName = System.IO.Path.Combine(docDir, "outputFile.ipt"); // the name must be in sync with OutputIpt localName in Activity
           // start HeartBeat around Save, it could be a long operation
           using (new HeartBeat())
           {
             doc.SaveAs(fileName, false);
           }
-          LogTrace("Saved as " + fileName);
+          LogTrace("Saved as {0}", fileName);
 
         }
       }
       catch (Exception e)
       {
-        LogError("Processing failed. " + e.ToString());
+        LogTrace("Processing failed: {0}", e.ToString());
       }
     }
-    /// <summary>
-    /// First param "_1" should be the filename of the JSON file containing the parameters and values
-    /// </summary>
-    /// <returns>
-    /// JSON with parameters.
-    /// JSON content sample:
-    ///   { "SquarePegSize": "0.24 in" }
-    /// </returns>
-    private static string GetParametersToChange(NameValueMap map)
-    {
-      string paramFile = (string)map.Value["_1"];
-      string json = File.ReadAllText(paramFile);
-      LogTrace("Inventor Parameters JSON: \"" + json + "\"");
-      return json;
-    }
+
     /// <summary>
     /// Change parameters in Inventor document.
     /// </summary>
@@ -142,25 +117,22 @@ namespace Autodesk.Forge.Sample.DesignAutomation.Inventor
       foreach (KeyValuePair<string, string> entry in parameters)
       {
         var parameterName = entry.Key;
-        var expression = entry.Value;
-
-        LogTrace("Parameter to change: {0}:{1}", parameterName, expression);
+        var newExpression = entry.Value;
 
         try
         {
-          Parameter param = theParams[parameterName];
-          param.Expression = expression;
+          Parameter param = theParams[parameterName.ToLower()];
+          LogTrace("Parameter {0} from {1} to {2}", parameterName, param.Expression, newExpression);
+          param.Expression = newExpression;
         }
         catch (Exception e)
         {
-          LogError("Cannot update '{0}' parameter. ({1})", parameterName, e.Message);
+          LogTrace("Cannot update {0}: {1}", parameterName, e.Message);
         }
       }
 
       doc.Update();
       doc.Save();
-
-      LogTrace("Doc updated.");
     }
     /// <summary>
     /// Get parameters for the document.
@@ -183,29 +155,7 @@ namespace Autodesk.Forge.Sample.DesignAutomation.Inventor
           throw new ApplicationException(string.Format("Unexpected document type ({0})", docType));
       }
     }
-    /// <summary>
-    /// Write info on input data to log.
-    /// </summary>
-    private static void LogInputData(Document doc, NameValueMap map)
-    {
-      // dump doc name
-      var traceInfo = new StringBuilder("RunWithArguments called with '");
-      traceInfo.Append(doc.DisplayName);
 
-      traceInfo.Append("'. Parameters: ");
-
-      // dump input parameters
-      // values in map are keyed on _1, _2, etc
-      string[] parameterValues = Enumerable
-                                  .Range(1, map.Count)
-                                  .Select(i => (string)map.Value["_" + i])
-                                  .ToArray();
-      string values = string.Join(", ", parameterValues);
-      traceInfo.Append(values);
-      traceInfo.Append(".");
-
-      LogTrace(traceInfo.ToString());
-    }
     #region Logging utilities
 
     /// <summary>
@@ -216,31 +166,6 @@ namespace Autodesk.Forge.Sample.DesignAutomation.Inventor
       Trace.TraceInformation(format, args);
     }
 
-    /// <summary>
-    /// Log message with 'trace' log level.
-    /// </summary>
-    private static void LogTrace(string message)
-    {
-      Trace.TraceInformation(message);
-    }
-
-    /// <summary>
-    /// Log message with 'error' log level.
-    /// </summary>
-    private static void LogError(string format, params object[] args)
-    {
-      Trace.TraceError(format, args);
-    }
-
-    /// <summary>
-    /// Log message with 'error' log level.
-    /// </summary>
-    private static void LogError(string message)
-    {
-      Trace.TraceError(message);
-    }
-
     #endregion
-
   }
 }
