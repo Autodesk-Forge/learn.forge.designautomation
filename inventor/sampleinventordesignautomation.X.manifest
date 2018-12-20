@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
+<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
+
+  <assemblyIdentity name="UpdateIPTParam" version="1.0.0.0"></assemblyIdentity>
+
+  <clrClass clsid="{84fef6aa-abf5-43be-b176-bb6f0c1d6680}" progid="Autodesk.Forge.Sample.DesignAutomation.Inventor.StandardAddInServer" threadingModel="Both" name="Autodesk.Forge.Sample.DesignAutomation.Inventor.StandardAddInServer" runtimeVersion=""></clrClass>
+
+  <file name="UpdateIPTParam.dll" hashalg="SHA1"></file>
+
+</assembly>

@@ -1,9 +1,10 @@
 using System;
 using System.Runtime.InteropServices;
+using Autodesk.Forge.Sample.DesignAutomation.Inventor;
 using Inventor;
 using Microsoft.Win32;
 
-namespace sampleinventordesignautomation
+namespace Autodesk.Forge.Sample.DesignAutomation.Inventor
 {
     /// <summary>
     /// This is the primary AddIn Server class that implements the ApplicationAddInServer interface
@@ -12,12 +13,12 @@ namespace sampleinventordesignautomation
     /// </summary>
     [GuidAttribute("84fef6aa-abf5-43be-b176-bb6f0c1d6680")]
     [ComVisible(true)]
-    public class StandardAddInServer : Inventor.ApplicationAddInServer
+    public class StandardAddInServer : ApplicationAddInServer
     {
 
         // Inventor server object.
-        private Inventor.InventorServer m_server;
-        private Automation m_automation;
+        private InventorServer m_server;
+        private Commands m_automation;
 
         public StandardAddInServer()
         {
@@ -25,7 +26,7 @@ namespace sampleinventordesignautomation
 
         #region ApplicationAddInServer Members
 
-        public void Activate(Inventor.ApplicationAddInSite addInSiteObject, bool firstTime)
+        public void Activate(ApplicationAddInSite addInSiteObject, bool firstTime)
         {
             // This method is called by Inventor when it loads the addin.
             // The AddInSiteObject provides access to the Inventor Application object.
@@ -33,7 +34,7 @@ namespace sampleinventordesignautomation
 
             // Initialize AddIn members.
             m_server = addInSiteObject.InventorServer;
-            m_automation = new Automation(m_server);
+            m_automation = new Commands(m_server);
             // TODO: Add ApplicationAddInServer.Activate implementation.
             // e.g. event initialization, command creation etc.
         }

@@ -6,9 +6,7 @@
         <Folder Include="wwwroot\" />
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="Autodesk.Forge" Version="1.5.0" />
-        <PackageReference Include="HangFire" Version="1.6.21" />
-        <PackageReference Include="Hangfire.MemoryStorage" Version="1.5.3" />
+        <PackageReference Include="Autodesk.Forge" Version="1.5.2" />
         <PackageReference Include="Microsoft.AspNetCore.App" />
     </ItemGroup>
 </Project>

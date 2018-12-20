@@ -7,12 +7,12 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 //
-[assembly: AssemblyTitle("sampleinventordesignautomation")]
-[assembly: AssemblyDescription("sampleinventordesignautomation")]
+[assembly: AssemblyTitle("learnforge.autodesk.io")]
+[assembly: AssemblyDescription("learnforge.autodesk.io")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Autodesk, Inc.")]
-[assembly: AssemblyProduct("Autodesk Inventor")]
-[assembly: AssemblyCopyright("Copyright ?2012 Autodesk, Inc.")]
+[assembly: AssemblyProduct("")]
+[assembly: AssemblyCopyright("Copyright 2018")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

@@ -4,14 +4,14 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{9A402F71-D386-4E2D-9582-1E99CE87206D}</ProjectGuid>
+    <ProjectGuid>{F17BDCE4-8CD6-4DAF-B57A-3A4B8137D736}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Autodesk.Forge.Sample.DesignAutomation.Inventor</RootNamespace>
-    <AssemblyName>UpdateRVTParam</AssemblyName>
-    <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
+    <RootNamespace>Autodesk.Forge.Sample.DesignAutomation.AutoCAD</RootNamespace>
+    <AssemblyName>UpdateDWGParam</AssemblyName>
+    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
+    <Deterministic>true</Deterministic>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -31,16 +31,16 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="DesignAutomationBridge">
-      <HintPath>.\DesignAutomationBridge.dll</HintPath>
+    <Reference Include="AcCoreMgd, Version=23.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\AutoCAD.NET.Core.23.0.0\lib\net47\AcCoreMgd.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="AcDbMgd, Version=23.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\AutoCAD.NET.Model.23.0.0\lib\net47\AcDbMgd.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.12.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="RevitAPI">
-      <HintPath>..\..\..\..\..\..\..\Program Files\Autodesk\Revit 2019\RevitAPI.dll</HintPath>
-      <Private>False</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -51,16 +51,18 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="UpdateRVTParam.bundle\PackageContents.xml" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-    <None Include="UpdateRVTParam.bundle\Contents\Autodesk.Forge.Sample.DesignAutomation.Revit.addin" />
+    <Content Include="UpdateDWGParam.bundle\PackageContents.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="UpdateDWGParam.bundle\Contents\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy /Y /F $(TargetDir)*.dll $(ProjectDir)UpdateRVTParam.bundle\Contents\
-if exist $(ProjectDir)../webapp/wwwroot/bundles/UpdateRVTParam.zip (del  $(ProjectDir)../webapp/wwwroot/bundles/UpdateRVTParam.zip /q)
-"C:\Program Files\7-Zip\7z.exe" a -tzip $(ProjectDir)../webapp/wwwroot/bundles/UpdateRVTParam.zip  $(ProjectDir)UpdateRVTParam.bundle\ -xr0!*.pdb</PostBuildEvent>
+    <PostBuildEvent>xcopy /Y /F $(TargetDir)*.dll $(ProjectDir)UpdateDWGParam.bundle\Contents\
+if exist $(ProjectDir)../webapp/wwwroot/bundles/UpdateDWGParam.zip (del  $(ProjectDir)../webapp/wwwroot/bundles/UpdateDWGParam.zip /q)
+"C:\Program Files\7-Zip\7z.exe" a -tzip $(ProjectDir)../webapp/wwwroot/bundles/UpdateDWGParam.zip  $(ProjectDir)UpdateDWGParam.bundle\ -xr0!*.pdb</PostBuildEvent>
   </PropertyGroup>
 </Project>

@@ -20,11 +20,11 @@ using Autodesk.Forge;
 using Autodesk.Forge.DesignAutomation.v3;
 using Autodesk.Forge.Model;
 using Autodesk.Forge.Model.DesignAutomation.v3;
-using Hangfire;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RestSharp;
 using System;
@@ -106,10 +106,11 @@ namespace forgeSample.Controllers
             {
                 // define the activity
                 // ToDo: parametrize for different engines...
-                string commandLine = string.Format(@"$(engine.path)\\{0} /i $(args[inputFile].path) /al $(appbundles[{1}].path)", Executable(engineName), appBundleName);
+                dynamic engineAttributes = EngineAttributes(engineName);
+                string commandLine = string.Format(@"$(engine.path)\\{0} /i $(args[inputFile].path) /al $(appbundles[{1}].path) /s $(settings[script].path)", engineAttributes.executable, appBundleName);
                 ModelParameter inputFile = new ModelParameter(false, false, ModelParameter.VerbEnum.Get, "input file", true, "$(inputFile)");
                 ModelParameter inputJson = new ModelParameter(false, false, ModelParameter.VerbEnum.Get, "input json", false, "params.json");
-                ModelParameter outputFile = new ModelParameter(false, false, ModelParameter.VerbEnum.Put, "output file", true, "outputFile.rvt");
+                ModelParameter outputFile = new ModelParameter(false, false, ModelParameter.VerbEnum.Put, "output file", true, "outputFile." + engineAttributes.extension);
                 Activity activitySpec = new Activity(
                   new List<string>() { commandLine },
                   new Dictionary<string, ModelParameter>() {
@@ -117,10 +118,11 @@ namespace forgeSample.Controllers
                     { "inputJson", inputJson },
                     { "outputFile", outputFile }
                   },
-                  engineName, new List<string>() { string.Format("{0}.{1}+{2}", NickName, appBundleName, Alias) }, null,
+                  engineName, new List<string>() { string.Format("{0}.{1}+{2}", NickName, appBundleName, Alias) },
+                  new Dictionary<string, dynamic>() { { "script", new { value = "UpdateParam\n" }  } },
                   string.Format("Description for {0}", activityName), null, activityName);
-                Activity newActivity = await activitiesApi.ActivitiesCreateItemAsync(activitySpec);
-
+                  Activity newActivity = await activitiesApi.ActivitiesCreateItemAsync(activitySpec);
+ 
                 // specify the alias for this Activity
                 Alias aliasSpec = new Alias(1, null, Alias);
                 Alias newAlias = await activitiesApi.ActivitiesCreateAliasAsync(activityName, aliasSpec);
@@ -136,12 +138,12 @@ namespace forgeSample.Controllers
         /// <summary>
         /// Helps identify the engine
         /// </summary>
-        private string Executable(string engine)
+        private dynamic EngineAttributes(string engine)
         {
-            if (engine.Contains("3dsMax")) return "3dsmaxbatch.exe";
-            if (engine.Contains("AutoCAD")) return "accoreconsole.exe";
-            if (engine.Contains("Inventor")) return "InventorCoreConsole.exe";
-            if (engine.Contains("Revit")) return "revitcoreconsole.exe";
+            if (engine.Contains("3dsMax")) return new { executable = "3dsmaxbatch.exe", extension = "3ds" };
+            if (engine.Contains("AutoCAD")) return new { executable = "accoreconsole.exe", extension = "dwg" };
+            if (engine.Contains("Inventor")) return new { executable = "InventorCoreConsole.exe", extension = "ipt" };
+            if (engine.Contains("Revit")) return new { executable = "revitcoreconsole.exe", extension = "rvt" };
             throw new Exception("Invalid engine");
         }
 
@@ -155,7 +157,6 @@ namespace forgeSample.Controllers
             // basic input validation
             string zipFileName = appBundleSpecs["zipFileName"].Value<string>();
             string engineName = appBundleSpecs["engine"].Value<string>();
-            string browerConnectionId = appBundleSpecs["browerConnectionId"].Value<string>();
 
             // standard name for this sample
             string appBundleName = zipFileName + "AppBundle";
@@ -230,7 +231,7 @@ namespace forgeSample.Controllers
             JObject workItemData = JObject.Parse(input.data);
             string widthParam = workItemData["width"].Value<string>();
             string heigthParam = workItemData["height"].Value<string>();
-            string activityName = workItemData["activityName"].Value<string>();
+            string activityName = string.Format("{0}.{1}", NickName, workItemData["activityName"].Value<string>());
             string browerConnectionId = workItemData["browerConnectionId"].Value<string>();
 
             // save the file on the server
@@ -245,13 +246,19 @@ namespace forgeSample.Controllers
             string bucketKey = NickName.ToLower() + "_designautomation";
             BucketsApi buckets = new BucketsApi();
             buckets.Configuration.AccessToken = oauth.access_token;
-            try { PostBucketsPayload bucketPayload = new PostBucketsPayload(bucketKey, null, PostBucketsPayload.PolicyKeyEnum.Transient); } catch { }; // in case bucket already exists
+            try
+            {
+                PostBucketsPayload bucketPayload = new PostBucketsPayload(bucketKey, null, PostBucketsPayload.PolicyKeyEnum.Transient);
+                await buckets.CreateBucketAsync(bucketPayload, "US");
+            }
+            catch { }; // in case bucket already exists
             // 2. upload inputFile
             string inputFileNameOSS = string.Format("{0}_input_{1}", DateTime.Now.ToString("yyyyMMddhhmmss"), input.inputFile.FileName); // avoid overriding
             ObjectsApi objects = new ObjectsApi();
             objects.Configuration.AccessToken = oauth.access_token;
             using (StreamReader streamReader = new StreamReader(fileSavePath))
-                await objects.UploadObjectAsync(bucketKey, input.inputFile.FileName, (int)streamReader.BaseStream.Length, streamReader.BaseStream, "application/octet-stream");
+                await objects.UploadObjectAsync(bucketKey, inputFileNameOSS, (int)streamReader.BaseStream.Length, streamReader.BaseStream, "application/octet-stream");
+            System.IO.File.Delete(fileSavePath);// delete server copy
 
             // prepare workitem arguments
             // 1. input file
@@ -267,7 +274,7 @@ namespace forgeSample.Controllers
             dynamic inputJson = new JObject();
             inputJson.Width = widthParam;
             inputJson.Height = heigthParam;
-            JObject inputJsonArgument = new JObject { new JProperty("url", "data:application/json, " + inputJson.ToString()) };
+            JObject inputJsonArgument = new JObject { new JProperty("url", "data:application/json, " + ((JObject)inputJson).ToString(Formatting.None).Replace("\"", "'")) }; // ToDo: need to improve this
             // 3. output file
             string outputFileNameOSS = string.Format("{0}_output_{1}", DateTime.Now.ToString("yyyyMMddhhmmss"), input.inputFile.FileName); // avoid overriding
             JObject outputFileArgument = new JObject
@@ -305,15 +312,24 @@ namespace forgeSample.Controllers
         /// </summary>
         [HttpPost]
         [Route("/api/forge/callback/designautomation")]
-        public IActionResult OnCallback(string id, [FromBody]dynamic body)
+        public async Task<IActionResult> OnCallback(string id, [FromBody]dynamic body)
         {
             try
             {
                 // your webhook should return immediately! we can use Hangfire to schedule a job
                 JObject bodyJson = JObject.Parse((string)body.ToString());
-                BackgroundJob.Schedule(() => DesignAutomationHub.OnComplete(_hubContext, id, bodyJson.ToString()), TimeSpan.FromSeconds(1));
+                await _hubContext.Clients.Client(id).SendAsync("onComplete", bodyJson.ToString());
+
+                var client = new RestClient(bodyJson["reportUrl"].Value<string>());
+                var request = new RestRequest(string.Empty);
+
+                Console.WriteLine(id);
+
+                byte[] bs = client.DownloadData(request);
+                string report = System.Text.Encoding.Default.GetString(bs);
+                await _hubContext.Clients.Client(id).SendAsync("onComplete", report);
             }
-            catch { }
+            catch (Exception e) { }
 
             // ALWAYS return ok (200)
             return Ok();
@@ -376,13 +392,5 @@ namespace forgeSample.Controllers
     public class DesignAutomationHub : Microsoft.AspNetCore.SignalR.Hub
     {
         public string GetConnectionId() { return Context.ConnectionId; }
-
-        /// <summary>
-        /// Notify the client that the workitem is complete
-        /// </summary>
-        public async static Task OnComplete(IHubContext<DesignAutomationHub> context, string connectionId, string message)
-        {
-            await context.Clients.Client(connectionId).SendAsync("onComplete", message);
-        }
     }
 }

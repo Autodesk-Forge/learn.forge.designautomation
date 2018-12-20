@@ -4,6 +4,9 @@
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
 .DS_Store
+*.dll
+Thumbs.db
+*.zip
 
 # User-specific files
 *.suo
