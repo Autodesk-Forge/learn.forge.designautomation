@@ -1,4 +1,4 @@
-# learn.forge.designautomation - ASP.NET 
+# learn.forge.designautomation - ASP.NET Core
 
 ![Platforms](https://img.shields.io/badge/platform-Windows|MacOS-lightgray.svg)
 ![.NET](https://img.shields.io/badge/.NET%20Core-2.1-blue.svg)
@@ -8,7 +8,7 @@
 [![Data-Management](https://img.shields.io/badge/Data%20Management-v1-green.svg)](http://developer.autodesk.com/)
 [![Design-Automation](https://img.shields.io/badge/Design%20Automation-v3-green.svg)](http://developer.autodesk.com/)
 
-![Advanced](https://img.shields.io/badge/Level-Advanced-red.svg)
+![Basic](https://img.shields.io/badge/Level-Basic-blue.svg)
 
 # Description
 
@@ -19,10 +19,6 @@ See other projects for bundles.
 ## Thumbnail
 
 ![thumbnail](../thumbnail.gif)
-
-## Demonstration
-
-ToDo
 
 # Setup
 
@@ -71,14 +67,7 @@ At the `.vscode\launch.json`, find the env vars and add your Forge Client ID, Se
 },
 ```
 
-Open `http://localhost:3000` to start the app.
-
-## Deployment
-
-To deploy this application to Heroku, the **Callback URL** for Forge must use your `.herokuapp.com` address. After clicking on the button below, at the Heroku Create New App page, set your Client ID, Secret and Callback URL for Forge.
-
-[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
-
+Open `http://localhost:3000` to start the app, if first time, click on `Define Activity`, enter new `width` & `height` values, select the input file (use from **sample files** folder), select the `Activity` and, finally, `Start workitem`. 
 
 # Further Reading
 
@@ -90,7 +79,6 @@ Documentation:
 Other APIs:
 
 - [.NET Core SignalR](https://docs.microsoft.com/en-us/aspnet/core/signalr/introduction?view=aspnetcore-2.2)
-
 
 ### Tips & Tricks
 
