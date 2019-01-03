@@ -3,7 +3,14 @@
         <TargetFramework>netcoreapp2.1</TargetFramework>
     </PropertyGroup>
     <ItemGroup>
+      <Content Remove="wwwroot\bundles\UpdateDWGParam.zip" />
+      <Content Remove="wwwroot\bundles\UpdateIPTParam.zip" />
+      <Content Remove="wwwroot\bundles\UpdateIPTParam1.zip" />
+      <Content Remove="wwwroot\bundles\UpdateRVTParam.zip" />
+    </ItemGroup>
+    <ItemGroup>
         <Folder Include="wwwroot\" />
+        <Folder Include="wwwroot\bundles\" />
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="Autodesk.Forge" Version="1.5.2" />
