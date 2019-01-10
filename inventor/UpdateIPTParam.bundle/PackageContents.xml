@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ApplicationPackage SchedmaVersion="1.0" Version="1.0" ProductCode="{84fef6aa-abf5-43be-b176-bb6f0c1d6680}" Name="sampledesignautomationPlugin" Description="Sample Plugin for Inventor design automation" Author="Chandra from FPD">
+    <CompanyDetails Name="Autodesk, Inc" Phone="415.555.5555" Url="www.autodesk.com" Email="noreply@autodesk.com" />
+    <Components>
+        <!-- For Inventor Engine, "Platform" attribute must be "Inventor" -->
+        <RuntimeRequirements  SeriesMax="R23" SeriesMin="R23" OS="Win64" Platform="Inventor" />
+        <!-- For Inventor Plug-in, the "Module" attribute must point to the .addin manifest file. -->
+        <ComponentEntry LoadOnAutoCADStartup="False" LoadOnCommandInvocation="False"
+            AppDescription="Sample plugin for Design Automation"
+            ModuleName="./Contents/Autodesk.Forge.Sample.DesignAutomation.Inventor.addin" AppName="Inventor for Design Automation"/>
+    </Components>
+    <EnvironmentVariables>
+    </EnvironmentVariables>
+</ApplicationPackage>

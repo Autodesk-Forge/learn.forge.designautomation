@@ -9,9 +9,13 @@
     <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <!-- .NET SignalR -->
+    <script src="//unpkg.com/@aspnet/signalr@1.1.0/dist/browser/signalr.min.js"></script>
+    <!-- Files for this project -->
+    <script src="/js/ForgeDesignAutomation.js"></script>
 </head>
 
-<body>
+<body style="height: 100%;">
     <!-- Fixed navbar by Bootstrap: https://getbootstrap.com/examples/navbar-fixed-top/ -->
     <nav class="navbar navbar-default navbar-fixed-top">
         <div class="container-fluid">
@@ -43,22 +47,44 @@
                     <input type="file" class="form-control-file" id="inputFile">
                 </div>
                 <div class="form-group">
-                    <label for="activity">Activity</label>
-                    <select class="form-control" id="activity">
-                        <option>AutoCAD</option>
-                        <option>Inventor</option>
-                        <option>Revit</option>
-                        <option>3ds Max</option>
-                    </select>
+                    <label for="activity">Existing activities</label>
+                    <select class="form-control" id="activity"> </select>
                 </div>
-                <div class="radio">
-                    <label class="checkbox-inline"><input type="checkbox" id="clear">Clear existing activities &
-                        appbundles before start. This is useful if you believe there are wrong settings on your account</label>
-                </div>
-                <center><button class="btn btn-primary">Start workitem</button></center>
+                <center><button class="btn btn-primary" id="startWorkitem">Start workitem</button></center><br />
+                <center><button class="btn btn-danger" id="clearAccount">Clear account</button> <button class="btn btn-success"
+                        id="defineActivityShow">Define
+                        new activity</button></center>
             </div>
             <div class="col-sm-8">
-                output log will appear here...
+                <pre id="outputlog" style="height: calc(100vh - 120px);; overflow-y: scroll;"></pre>
+            </div>
+        </div>
+    </div>
+    <!-- Modal Create Bucket -->
+    <div class="modal fade" id="defineActivityModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Cancel"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">Define new activity</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="localBundles">Select a local AppBundle:</label>
+                        <select class="form-control" id="localBundles"> </select>
+                        <b>Tip:</b> Make sure .ZIP bundles are placed at <b>/bundles/</b> folder
+                    </div>
+                    <div class="form-group">
+                        <label for="engines">Select engine:</label>
+                        <select class="form-control" id="engines"> </select>
+                    </div>
+                    For this sample the .ZIP name is used as suffix to define <b>AppBundle</b> and <b>Activity</b>
+                    names. Activities will have file and params input, and file output.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="createAppBundleActivity">Define activity</button>
+                </div>
             </div>
         </div>
     </div>
