@@ -140,7 +140,7 @@ namespace forgeSample.Controllers
         /// </summary>
         private dynamic EngineAttributes(string engine)
         {
-            if (engine.Contains("3dsMax")) return new { executable = "3dsmaxbatch.exe", extension = "3ds" };
+            if (engine.Contains("3dsMax")) return new { executable = "3dsmaxbatch.exe", extension = "max" };
             if (engine.Contains("AutoCAD")) return new { executable = "accoreconsole.exe", extension = "dwg" };
             if (engine.Contains("Inventor")) return new { executable = "InventorCoreConsole.exe", extension = "ipt" };
             if (engine.Contains("Revit")) return new { executable = "revitcoreconsole.exe", extension = "rvt" };
