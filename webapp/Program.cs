@@ -1,13 +1,22 @@
 ﻿using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
+using Autodesk.Forge.Core;
+using Autodesk.Forge.DesignAutomation;
 
 namespace forgeSample.Controllers
 {
-  public class Program
+    public class Program
     {
         public static void Main(string[] args)
         {
-            CreateWebHostBuilder(args).Build().Run();
+            CreateWebHostBuilder(args).ConfigureAppConfiguration(builder =>
+            {
+                builder.AddLegacySampleEnvironmentVariables();
+            })
+            .ConfigureServices((hostContext, services) =>
+            {
+                services.AddDesignAutomation(hostContext.Configuration);
+            }).Build().Run();
         }
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>

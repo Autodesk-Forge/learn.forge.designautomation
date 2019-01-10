@@ -17,9 +17,9 @@
 /////////////////////////////////////////////////////////////////////
 
 using Autodesk.Forge;
-using Autodesk.Forge.DesignAutomation.v3;
+using Autodesk.Forge.DesignAutomation;
+using Autodesk.Forge.DesignAutomation.Model;
 using Autodesk.Forge.Model;
-using Autodesk.Forge.Model.DesignAutomation.v3;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -32,11 +32,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using ActivitiesApi = Autodesk.Forge.DesignAutomation.v3.ActivitiesApi;
-using Activity = Autodesk.Forge.Model.DesignAutomation.v3.Activity;
-using EnginesApi = Autodesk.Forge.DesignAutomation.v3.EnginesApi;
-using WorkItem = Autodesk.Forge.Model.DesignAutomation.v3.WorkItem;
-using WorkItemsApi = Autodesk.Forge.DesignAutomation.v3.WorkItemsApi;
+using Activity = Autodesk.Forge.DesignAutomation.Model.Activity;
+using Alias = Autodesk.Forge.DesignAutomation.Model.Alias;
+using AppBundle = Autodesk.Forge.DesignAutomation.Model.AppBundle;
+using WorkItem = Autodesk.Forge.DesignAutomation.Model.WorkItem;
+using WorkItemStatus = Autodesk.Forge.DesignAutomation.Model.WorkItemStatus;
 
 namespace forgeSample.Controllers
 {
@@ -47,14 +47,22 @@ namespace forgeSample.Controllers
         private IHostingEnvironment _env;
         // used to access the SignalR Hub
         private IHubContext<DesignAutomationHub> _hubContext;
-        // Constructor, where env and hubContext are specified
-        public DesignAutomationController(IHostingEnvironment env, IHubContext<DesignAutomationHub> hubContext) { _env = env; _hubContext = hubContext; }
         // Local folder for bundles
         public string LocalBundlesFolder { get { return Path.Combine(_env.WebRootPath, "bundles"); } }
         /// Prefix for AppBundles and Activities
         public static string NickName { get { return OAuthController.GetAppSetting("FORGE_CLIENT_ID"); } }
         /// Alias for the app (e.g. DEV, STG, PROD). This value may come from an environment variable
         public static string Alias { get { return "dev"; } }
+        // Design Automation v3 API
+        DesignAutomationClient _designAutomation;
+
+        // Constructor, where env and hubContext are specified
+        public DesignAutomationController(IHostingEnvironment env, IHubContext<DesignAutomationHub> hubContext, DesignAutomationClient api)
+        {
+            _designAutomation = api;
+            _env = env;
+            _hubContext = hubContext;
+        }
 
         /// <summary>
         /// Get all Activities defined for this account
@@ -63,14 +71,8 @@ namespace forgeSample.Controllers
         [Route("api/forge/designautomation/activities")]
         public async Task<List<string>> GetDefinedActivities()
         {
-            dynamic oauth = await OAuthController.GetInternalAsync();
-
-            // define Activities API
-            ActivitiesApi activitiesApi = new ActivitiesApi();
-            activitiesApi.Configuration.AccessToken = oauth.access_token; ;
-
             // filter list of 
-            PageString activities = await activitiesApi.ActivitiesGetItemsAsync();
+            Page<string> activities = await _designAutomation.GetActivitiesAsync();
             List<string> definedActivities = new List<string>();
             foreach (string activity in activities.Data)
                 if (activity.StartsWith(NickName) && activity.IndexOf("$LATEST") == -1)
@@ -90,17 +92,12 @@ namespace forgeSample.Controllers
             string zipFileName = activitySpecs["zipFileName"].Value<string>();
             string engineName = activitySpecs["engine"].Value<string>();
 
-            // define Activities API
-            dynamic oauth = await OAuthController.GetInternalAsync();
-            ActivitiesApi activitiesApi = new ActivitiesApi();
-            activitiesApi.Configuration.AccessToken = oauth.access_token;
-
             // standard name for this sample
             string appBundleName = zipFileName + "AppBundle";
             string activityName = zipFileName + "Activity";
 
             // 
-            PageString activities = await activitiesApi.ActivitiesGetItemsAsync();
+            Page<string> activities = await _designAutomation.GetActivitiesAsync();
             string qualifiedActivityId = string.Format("{0}.{1}+{2}", NickName, activityName, Alias);
             if (!activities.Data.Contains(qualifiedActivityId))
             {
@@ -108,24 +105,28 @@ namespace forgeSample.Controllers
                 // ToDo: parametrize for different engines...
                 dynamic engineAttributes = EngineAttributes(engineName);
                 string commandLine = string.Format(@"$(engine.path)\\{0} /i $(args[inputFile].path) /al $(appbundles[{1}].path) /s $(settings[script].path)", engineAttributes.executable, appBundleName);
-                ModelParameter inputFile = new ModelParameter(false, false, ModelParameter.VerbEnum.Get, "input file", true, "$(inputFile)");
-                ModelParameter inputJson = new ModelParameter(false, false, ModelParameter.VerbEnum.Get, "input json", false, "params.json");
-                ModelParameter outputFile = new ModelParameter(false, false, ModelParameter.VerbEnum.Put, "output file", true, "outputFile." + engineAttributes.extension);
-                Activity activitySpec = new Activity(
-                  new List<string>() { commandLine },
-                  new Dictionary<string, ModelParameter>() {
-                    { "inputFile", inputFile },
-                    { "inputJson", inputJson },
-                    { "outputFile", outputFile }
-                  },
-                  engineName, new List<string>() { string.Format("{0}.{1}+{2}", NickName, appBundleName, Alias) },
-                  new Dictionary<string, dynamic>() { { "script", new { value = "UpdateParam\n" }  } },
-                  string.Format("Description for {0}", activityName), null, activityName);
-                  Activity newActivity = await activitiesApi.ActivitiesCreateItemAsync(activitySpec);
- 
+                Activity activitySpec = new Activity()
+                {
+                    Id = activityName,
+                    Appbundles = new List<string>() { string.Format("{0}.{1}+{2}", NickName, appBundleName, Alias) },
+                    CommandLine = new List<string>() { commandLine },
+                    Engine = engineName,
+                    Parameters = new Dictionary<string, Autodesk.Forge.DesignAutomation.Model.Parameter>()
+                    {
+                        { "inputFile", new Autodesk.Forge.DesignAutomation.Model.Parameter() { Description = "input file", LocalName = "$(inputFile)", Ondemand = false, Required = true, Verb = Verb.Get, Zip = false } },
+                        { "inputJson", new Autodesk.Forge.DesignAutomation.Model.Parameter() { Description = "input json", LocalName = "params.json", Ondemand = false, Required = false, Verb = Verb.Get, Zip = false } },
+                        { "outputFile", new Autodesk.Forge.DesignAutomation.Model.Parameter() { Description = "output file", LocalName = "outputFile." + engineAttributes.extension, Ondemand = false, Required = true, Verb = Verb.Put, Zip = false } }
+                    },
+                    Settings = new Dictionary<string, ISetting>()
+                    {
+                        { "script", new StringSetting(){ Value = "UpdateParam\n"  }  }
+                    }
+                };
+                Activity newActivity = await _designAutomation.CreateActivityAsync(activitySpec);
+
                 // specify the alias for this Activity
-                Alias aliasSpec = new Alias(1, null, Alias);
-                Alias newAlias = await activitiesApi.ActivitiesCreateAliasAsync(activityName, aliasSpec);
+                Alias aliasSpec = new Alias() { Id = Alias, Version = 1 };
+                Alias newAlias = await _designAutomation.CreateActivityAliasAsync(activityName, aliasSpec);
 
                 return Ok(new { Activity = qualifiedActivityId });
             }
@@ -165,13 +166,8 @@ namespace forgeSample.Controllers
             string packageZipPath = Path.Combine(LocalBundlesFolder, zipFileName + ".zip");
             if (!System.IO.File.Exists(packageZipPath)) throw new Exception("Appbundle not found at " + packageZipPath);
 
-            // define Activities API
-            dynamic oauth = await OAuthController.GetInternalAsync();
-            AppBundlesApi appBundlesApi = new AppBundlesApi();
-            appBundlesApi.Configuration.AccessToken = oauth.access_token;
-
             // get defined app bundles
-            PageString appBundles = await appBundlesApi.AppBundlesGetItemsAsync();
+            Page<string> appBundles = await _designAutomation.GetAppBundlesAsync();
 
             // check if app bundle is already define
             dynamic newAppVersion;
@@ -179,31 +175,45 @@ namespace forgeSample.Controllers
             if (!appBundles.Data.Contains(qualifiedAppBundleId))
             {
                 // create an appbundle (version 1)
-                AppBundle appBundleSpec = new AppBundle(appBundleName, null, engineName, null, null, string.Format("Description for {0}", appBundleName), null, appBundleName);
-                newAppVersion = await appBundlesApi.AppBundlesCreateItemAsync(appBundleSpec);
+                AppBundle appBundleSpec = new AppBundle()
+                {
+                    Package = appBundleName,
+                    Engine = engineName,
+                    Id = appBundleName,
+                    Description = string.Format("Description for {0}", appBundleName),
+
+                };
+                newAppVersion = await _designAutomation.CreateAppBundleAsync(appBundleSpec);
                 if (newAppVersion == null) throw new Exception("Cannot create new app");
 
                 // create alias pointing to v1
-                Alias aliasSpec = new Alias(1, null, Alias);
-                Alias newAlias = await appBundlesApi.AppBundlesCreateAliasAsync(appBundleName, aliasSpec);
+                Alias aliasSpec = new Alias() { Id = Alias, Version = 1 };
+                Alias newAlias = await _designAutomation.CreateAppBundleAliasAsync(appBundleName, aliasSpec);
             }
             else
             {
                 // create new version
-                AppBundle appBundleSpec = new AppBundle(null, null, engineName, null, null, appBundleName, null, null);
-                newAppVersion = await appBundlesApi.AppBundlesCreateItemVersionAsync(appBundleName, appBundleSpec);
+                AppBundle appBundleSpec = new AppBundle()
+                {
+                    Engine = engineName,
+                    Description = appBundleName
+                };
+                newAppVersion = await _designAutomation.CreateAppBundleVersionAsync(appBundleName, appBundleSpec);
                 if (newAppVersion == null) throw new Exception("Cannot create new version");
 
                 // update alias pointing to v+1
-                Alias aliasSpec = new Alias(newAppVersion.Version, null, null);
-                Alias newAlias = await appBundlesApi.AppBundlesModifyAliasAsync(appBundleName, Alias, aliasSpec);
+                Alias aliasSpec = new Alias()
+                {
+                    Version = newAppVersion.Version
+                };
+                Alias newAlias = await _designAutomation.ModifyAppBundleAliasAsync(appBundleName, Alias, aliasSpec);
             }
 
             // upload the zip with .bundle
             RestClient uploadClient = new RestClient(newAppVersion.UploadParameters.EndpointURL);
             RestRequest request = new RestRequest(string.Empty, Method.POST);
             request.AlwaysMultipartFormData = true;
-            foreach (KeyValuePair<string, object> x in newAppVersion.UploadParameters.FormData) request.AddParameter(x.Key, x.Value);
+            foreach (KeyValuePair<string, string> x in newAppVersion.UploadParameters.FormData) request.AddParameter(x.Key, x.Value);
             request.AddFile("file", packageZipPath);
             request.AddHeader("Cache-Control", "no-cache");
             await uploadClient.ExecuteTaskAsync(request);
@@ -262,49 +272,50 @@ namespace forgeSample.Controllers
 
             // prepare workitem arguments
             // 1. input file
-            JObject inputFileArgument = new JObject
+            XrefTreeArgument inputFileArgument = new XrefTreeArgument()
             {
-              new JProperty("url", string.Format("https://developer.api.autodesk.com/oss/v2/buckets/{0}/objects/{1}", bucketKey, inputFileNameOSS)),
-              new JProperty("headers",
-              new JObject{
-                new JProperty("Authorization", "Bearer " + oauth.access_token)
-              })
+                Url = string.Format("https://developer.api.autodesk.com/oss/v2/buckets/{0}/objects/{1}", bucketKey, inputFileNameOSS),
+                Headers = new Dictionary<string, string>()
+                 {
+                     { "Authorization", "Bearer " + oauth.access_token }
+                 }
             };
             // 2. input json
             dynamic inputJson = new JObject();
             inputJson.Width = widthParam;
             inputJson.Height = heigthParam;
-            JObject inputJsonArgument = new JObject { new JProperty("url", "data:application/json, " + ((JObject)inputJson).ToString(Formatting.None).Replace("\"", "'")) }; // ToDo: need to improve this
+            XrefTreeArgument inputJsonArgument = new XrefTreeArgument()
+            {
+                Url = "data:application/json, " + ((JObject)inputJson).ToString(Formatting.None).Replace("\"", "'")
+            };
             // 3. output file
             string outputFileNameOSS = string.Format("{0}_output_{1}", DateTime.Now.ToString("yyyyMMddhhmmss"), input.inputFile.FileName); // avoid overriding
-            JObject outputFileArgument = new JObject
+            XrefTreeArgument outputFileArgument = new XrefTreeArgument()
             {
-              new JProperty("verb", "PUT"),
-              new JProperty("url", string.Format("https://developer.api.autodesk.com/oss/v2/buckets/{0}/objects/{1}", bucketKey, outputFileNameOSS)),
-              new JProperty("headers",
-              new JObject{
-                new JProperty("Authorization", "Bearer " + oauth.access_token)
-              })
+                Url = string.Format("https://developer.api.autodesk.com/oss/v2/buckets/{0}/objects/{1}", bucketKey, outputFileNameOSS),
+                Verb = Verb.Put,
+                Headers = new Dictionary<string, string>()
+                   {
+                       {"Authorization", "Bearer " + oauth.access_token }
+                   }
             };
 
             // prepare & submit workitem
             string callbackUrl = string.Format("{0}/api/forge/callback/designautomation?id={1}", OAuthController.GetAppSetting("FORGE_WEBHOOK_CALLBACK_HOST"), browerConnectionId);
-            WorkItem workItemSpec = new WorkItem(
-                      null, activityName,
-                      new Dictionary<string, JObject>()
-                      {
-                        { "inputFile", inputFileArgument },
-                        { "inputJson",  inputJsonArgument},
-                        { "outputFile", outputFileArgument },
-                        //{ "onProgress", new JObject { new JProperty("verb", "POST"), new JProperty("url", callbackUrl) }},
-                        { "onComplete", new JObject { new JProperty("verb", "POST"), new JProperty("url", callbackUrl) }}
-                      },
-                      null);
-            WorkItemsApi workItemApi = new WorkItemsApi();
-            workItemApi.Configuration.AccessToken = oauth.access_token; ;
-            WorkItemStatus newWorkItem = await workItemApi.WorkItemsCreateWorkItemsAsync(null, null, workItemSpec);
+            WorkItem workItemSpec = new WorkItem()
+            {
+                ActivityId = activityName,
+                Arguments = new Dictionary<string, IArgument>()
+                {
+                    { "inputFile", inputFileArgument },
+                    { "inputJson",  inputJsonArgument },
+                    { "outputFile", outputFileArgument },
+                    { "onComplete", new XrefTreeArgument { Verb = Verb.Post, Url = callbackUrl } }
+                }
+            };
+            WorkItemStatus workItemStatus = await _designAutomation.CreateWorkItemsAsync(workItemSpec);
 
-            return Ok(new { WorkItemId = newWorkItem.Id });
+            return Ok(new { WorkItemId = workItemStatus.Id });
         }
 
         /// <summary>
@@ -345,9 +356,7 @@ namespace forgeSample.Controllers
             dynamic oauth = await OAuthController.GetInternalAsync();
 
             // define Engines API
-            EnginesApi enginesApi = new EnginesApi();
-            enginesApi.Configuration.AccessToken = oauth.access_token;
-            PageString engines = await enginesApi.EnginesGetItemsAsync();
+            Page<string> engines = await _designAutomation.GetEnginesAsync();
             engines.Data.Sort();
 
             return engines.Data; // return list of engines
@@ -362,14 +371,8 @@ namespace forgeSample.Controllers
         {
             if (!_env.IsDevelopment()) return BadRequest(); // disable when published :-)
 
-            dynamic oauth = await OAuthController.GetInternalAsync();
-
-            // define the account api (ForgeApps)
-            Autodesk.Forge.DesignAutomation.v3.ForgeAppsApi forgeAppApi = new ForgeAppsApi();
-            forgeAppApi.Configuration.AccessToken = oauth.access_token;
-
             // clear account
-            await forgeAppApi.ForgeAppsDeleteUserAsync("me");
+            await _designAutomation.DeleteUserAsync("me");
             return Ok();
         }
 
