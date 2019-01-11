@@ -333,3 +333,11 @@ ASALocalRun/
 
 # MFractors (Xamarin productivity tool) working folder 
 .mfractor/
+3dsmax/refs/3dsMaxDA_automation/automate_plugin.ms
+3dsmax/refs/3dsMaxDA_automation/runMaxBatchLocally.bat
+3dsmax/refs/3dsMaxDA_automation/test02.max
+3dsmax/refs/3dsMaxDA_automation/ADN-ExplodeGeometryDA.bundle/PackageContents.xml
+3dsmax/refs/scenes/exploded_simple_logo.max
+3dsmax/refs/scenes/exploded_simple_logo2.max
+3dsmax/refs/scenes/exploded_simple_logo_0.5.max
+3dsmax/refs/scenes/simple_logo.max
