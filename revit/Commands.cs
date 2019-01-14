@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.IO;
 
-namespace Autodesk.Forge.Sample.DesignAutomation.Inventor
+namespace Autodesk.Forge.Sample.DesignAutomation.Revit
 {
   [Transaction(TransactionMode.Manual)]
   [Regeneration(RegenerationOption.Manual)]
