@@ -1,121 +1,50 @@
-
-
 # learn.forge.designautomation - AutoCAD
 
-## This is a step by step tutorial to prepare AutoCAD Application bundle which can be consumed in Forge Design Automation
+![Platforms](https://img.shields.io/badge/Plugins-Windows-lightgray.svg)
+![.NET](https://img.shields.io/badge/.NET%20Framework-4.7-blue.svg)
+[![AutoCAD](https://img.shields.io/badge/AutoCAD-2019-lightblue.svg)](http://developer.autodesk.com/)
 
-### Step1: Launch Visual Studio 2017
+![Basic](https://img.shields.io/badge/Level-Basic-blue.svg)
 
-Launch Visual Studio 2017 Community or Professional, create a new C# class library.
+# Description
 
-![](https://github.com/MadhukarMoogala/learn.forge.designautomation/blob/master/autocad/images/LaunchVS2017.JPG)
+AutoCAD plugin that updates the `width` and `height` of a Dynamic Block.
 
-### Step2: Install AutoCAD .NET Packages for AutoCAD 2019 from Nuget Package Manager console.
+# Setup
 
-![](https://github.com/MadhukarMoogala/learn.forge.designautomation/blob/master/autocad/images/nugetForAutoCAD.JPG)
+## Prerequisites
 
-### Step3: Nuget package will install many modules, most of theses modules are not required for Forge Design Automation,  keep the relevant ones and remove the rest.
+1. **Visual Studio** 2017
+2. **AutoCAD** 2019 required to compile changes into the plugin
+3. **7z zip** requires to create the bundle ZIP, [download here](https://www.7-zip.org/)
 
-![](https://github.com/MadhukarMoogala/learn.forge.designautomation/blob/master/autocad/images/ModulesNotRequiredForForge.JPG)
+## References
 
-### Step4 :  Write C# .NET  application to update parameters Width and Height of a dynamic block reference
+This AutoCAD plugin requires **AcCoreMgd** and **AcDbMgd** references, which should restore from NuGet. If not, right-click on **References**, then **Manage NuGet Packages**, search for _AutoCAD.NET_ and add `AutoCAD.NET Core`.
 
-Please [refer code.](https://github.com/MadhukarMoogala/learn.forge.designautomation/blob/master/autocad/UpdateWindowParameters/MainEnrty.cs)
+![](../media/autocad/nuget_autocad.png) 
 
-### Step 5:  Debugging locally your .NET module before making and uploading Application Package Bundle to Forge.
+## Build
 
-1. In the solution explorer, right click on Project and go to Properties.
+Under **Properties**, at **Build Event** page, the following `Post-build event command line` will copy the DLL into the `\UpdateDWGParam.bundle/Content\` folder, create a `.ZIP` (using [7z](https://www.7-zip.org/)) and copy to the Webapp folder.
 
-2. Go to Debug page, in `start external program`, pass the path AcCoreConsole.exe `C:\Program Files\Autodesk\AutoCAD 2019\accoreconsole.exe`
+```
+xcopy /Y /F $(TargetDir)*.dll $(ProjectDir)UpdateDWGParam.bundle\Contents\del /F $(ProjectDir)..\webapp\wwwroot\bundles\UpdateDWGParam.zip"C:\Program Files\7-Zip\7z.exe" a -tzip $(ProjectDir)../webapp/wwwroot/bundles/UpdateDWGParam.zip  $(ProjectDir)UpdateDWGParam.bundle\ -xr0!*.pdb
+```
 
-3. Go to Command Line arguments, 
+## Debug Locally
 
-   ```
-   /i "D:\Forge\learn.forge.designautomation/learn.forge.designautomation/blob/master\autocad\testDrawing\WindowTest.dwg"
-   /s "D:\Forge\learn.forge.designautomation/learn.forge.designautomation/blob/master\autocad\testDrawing\window.scr"
-   ```
+Please review this section of the [My First Plugin Tutorial](https://knowledge.autodesk.com/support/autocad/learn-explore/caas/simplecontent/content/lesson-4-debugging-your-code-for-my-first-autocad-plug.html). The plugin should load and work on AutoCAD 2019 desktop.
 
-   /i: input drawing
+# Further Reading
 
-   /s: to load script file.
+- [My First AutoCAD Plugin](https://knowledge.autodesk.com/support/autocad/learn-explore/caas/simplecontent/content/my-first-autocad-plug-overview.html)
+- [AutoCAD Developer Center](https://www.autodesk.com/developer-network/platform-technologies/autocad)
 
-   script file is helpful way to load the built module and run the command and other parameters, for example.
+## License
 
-   ```
-   SECURELOAD
-   0
-   NETLOAD
-   D:\Forge\learn.forge.designautomation\autocad\UpdateWindowParameters\bin\Debug\UpdateWindowParameters.dll
-   UpdateWindowParam
-   WindowBlock
-   40.00
-   80.00
-   SAVEAS
-   2018
-   D:\Forge\learn.forge.designautomation\autocad\testDrawing\windowNew.dwg
-   ```
+This sample is licensed under the terms of the [MIT License](http://opensource.org/licenses/MIT). Please see the [LICENSE](LICENSE) file for full details.
 
-   ![](https://github.com/MadhukarMoogala/learn.forge.designautomation/blob/master/autocad/images/LocalDebug.JPG)
+## Written by
 
-### Step 6: Building AppPackage .bundle
-
-   The “Autoloader” plugin mechanism simplifies deployment of your plugin applications to Forge, This is done by
-   allowing you to deploy your plugins as a simple package format (a folder structure with a .bundle
-   extension) along with an XML file placed in the root of the folder structure. The XML file contains
-   metadata which describes the components of your plugin inside the folder structure, and how they should
-   be loaded.
-
-   ![](https://github.com/MadhukarMoogala/learn.forge.designautomation/blob/master/autocad/images/BundleStructure.JPG)
-
-
-
-   Full reference of [PackageContents.xml](https://knowledge.autodesk.com/search-result/caas/CloudHelp/cloudhelp/2015/ENU/AutoCAD-Customization/files/GUID-BC76355D-682B-46ED-B9B7-66C95EEF2BD0-htm.html) and [Bundle](https://knowledge.autodesk.com/search-result/caas/CloudHelp/cloudhelp/2015/ENU/AutoCAD-Customization/files/GUID-40F5E92C-37D8-4D54-9497-CD9F0659F9BB-htm.html) structure.
-
-   1. Create a UpdateParameters.bundle folder within same project folder
-
-   2. Create a Contents folder within UpdateParameters.bundle, this contains module of our UpdateParameters application.
-
-   3. Create a PackageContents.xml, this contains metadata of the application module to loaded by Forge Design Automation
-
-      ```xml
-      <?xml version="1.0" encoding="utf-8" ?>
-      <ApplicationPackage
-          SchemaVersion="1.0"
-          Version="1.0"
-          ProductCode="{F11EA57A-1E7E-4B6D-8E81-986B071E3E07}"
-          Name="UpdateWindowParameters"
-          Description="A sample package to update parameters of a Dyanmic blockreference"
-          Author="Autodesk Forge">
-        <CompanyDetails
-            Name="Autodesk, Inc"
-            Phone="12345678910"
-            Url="www.autodesk.com"
-            Email="forge.help@autodesk.com"/>
-        <Components>
-          <RuntimeRequirements
-              OS="Win64"
-              Platform="AutoCAD"
-      		SeriesMin="R23.0" SeriesMax="R23.0"/>
-          <ComponentEntry
-              AppName="UpdateWindowParameters"
-              ModuleName="./Contents/UpdateWindowParameters.dll"
-              AppDescription="AutoCAD.IO .net App to update parameters of Dynamic blockreference in AutoCAD Drawing"
-              LoadOnCommandInvocation="True"
-              LoadOnAutoCADStartup="False">
-            <Commands GroupName="FPDCommands">
-              <Command Global="UpdateWindowParam" Local="UpdateWindowParam" />
-            </Commands>
-          </ComponentEntry>
-        </Components>
-      </ApplicationPackage>
-      ```
-
-4. Wrap the UpdateParameters.bundle to bundle.zip, this can be done is `post build event`, you can install free [7z zip tool](https://www.7-zip.org/), post build script is useful for testing module locally and updating bundle.zip instantaneously.
-
-   ```bash
-   xcopy /Y $(TargetPath) $(ProjectDir)UpdateWindowParemeters.bundle\Contents\
-   if exist $(ProjectDir)bundle.zip (del bundle.zip /q)
-   7z a -tzip $(ProjectDir)bundle.zip  $(ProjectDir)UpdateWindowParemeters.bundle\ -xr0!*.pdb
-   ```
-
-
+Madhukar Moogala [@galakar](https://twitter.com/galakar), [Forge Partner Development](http://forge.autodesk.com)
