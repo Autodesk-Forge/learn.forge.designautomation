@@ -33,22 +33,6 @@ namespace forgeSample.Controllers
         // cache them using static variables. Note we still need to refresh
         // them after the expires_in time (in seconds)
         private static dynamic InternalToken { get; set; }
-        private static dynamic PublicToken { get; set; }
-
-        /// <summary>
-        /// Get access token with public (viewables:read) scope
-        /// </summary>
-        [HttpGet]
-        [Route("api/forge/oauth/token")]
-        public async Task<dynamic> GetPublicAsync()
-        {
-            if (PublicToken == null || PublicToken.ExpiresAt < DateTime.UtcNow)
-            {
-                PublicToken = await Get2LeggedTokenAsync(new Scope[] { Scope.ViewablesRead });
-                PublicToken.ExpiresAt = DateTime.UtcNow.AddSeconds(PublicToken.expires_in);
-            }
-            return PublicToken;
-        }
 
         /// <summary>
         /// Get access token with internal (write) scope
