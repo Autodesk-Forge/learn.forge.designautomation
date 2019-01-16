@@ -34,7 +34,9 @@ xcopy /Y /F $(TargetDir)*.dll $(ProjectDir)UpdateDWGParam.bundle\Contents\del /
 
 ## Debug Locally
 
-Please review this section of the [My First Plugin Tutorial](https://knowledge.autodesk.com/support/autocad/learn-explore/caas/simplecontent/content/lesson-4-debugging-your-code-for-my-first-autocad-plug.html). The plugin should load and work on AutoCAD 2019 desktop.
+Please review this section of the [My First Plugin Tutorial](https://knowledge.autodesk.com/support/autocad/learn-explore/caas/simplecontent/content/lesson-4-debugging-your-code-for-my-first-autocad-plug.html). The plugin should load and work on AutoCAD 2019 desktop. 
+
+To better emulate the Design Automation approach, it's better to debug with AutoCAD Console. [This blog post describes how to use it](https://adndevblog.typepad.com/autocad/2012/04/getting-started-with-accoreconsole.html).
 
 # Further Reading
 
