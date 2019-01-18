@@ -6,7 +6,7 @@
 .DS_Store
 *.dll
 Thumbs.db
-*.zip
+.vscode/
 
 # User-specific files
 *.suo

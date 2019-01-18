@@ -29,7 +29,7 @@ This Inventor plugin requires **Autodesk.Inventor.Interop** reference, which sho
 Under **Properties**, at **Build Event** page, the following `Post-build event command line` will copy the DLL into the `\UpdateIPTParam.bundle/Content\` folder, create a `.ZIP` (using [7z](https://www.7-zip.org/)) and copy to the Webapp folder.
 
 ```
-xcopy /Y /F $(TargetDir)*.dll $(ProjectDir)UpdateIPTParam.bundle\Contents\del /F $(ProjectDir)..\webapp\wwwroot\bundles\UpdateIPTParam.zip"C:\Program Files\7-Zip\7z.exe" a -tzip $(ProjectDir)../webapp/wwwroot/bundles/UpdateIPTParam.zip  $(ProjectDir)UpdateIPTParam.bundle\ -xr0!*.pdb
+xcopy /Y /F $(TargetDir)*.dll $(ProjectDir)UpdateIPTParam.bundle\Contents\del /F $(ProjectDir)..\forgesample\wwwroot\bundles\UpdateIPTParam.zip"C:\Program Files\7-Zip\7z.exe" a -tzip $(ProjectDir)../forgesample/wwwroot/bundles/UpdateIPTParam.zip  $(ProjectDir)UpdateIPTParam.bundle\ -xr0!*.pdb
 ```
 
 ## Debug Locally

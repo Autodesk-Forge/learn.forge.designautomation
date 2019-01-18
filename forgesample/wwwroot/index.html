@@ -27,6 +27,10 @@
                     </a>
                 </li>
             </ul>
+            <div style="float: right; margin-top: 15px; cursor: pointer;">
+                <span style="padding-right: 5px;" data-toggle="modal" data-target="#defineActivityModal" title="Configura AppBundle & Activity"><span
+                        class="glyphicon glyphicon-cog glyphiconTop mlink"> </span> Configure</span>
+            </div>
         </div>
     </nav>
     <!-- End of navbar -->
@@ -51,22 +55,19 @@
                     <select class="form-control" id="activity"> </select>
                 </div>
                 <center><button class="btn btn-primary" id="startWorkitem">Start workitem</button></center><br />
-                <center><button class="btn btn-danger" id="clearAccount">Clear account</button> <button class="btn btn-success"
-                        id="defineActivityShow">Define
-                        new activity</button></center>
             </div>
             <div class="col-sm-8">
                 <pre id="outputlog" style="height: calc(100vh - 120px);; overflow-y: scroll;"></pre>
             </div>
         </div>
     </div>
-    <!-- Modal Create Bucket -->
+    <!-- Modal Define AppBundle & Activity -->
     <div class="modal fade" id="defineActivityModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-label="Cancel"><span aria-hidden="true">&times;</span></button>
-                    <h4 class="modal-title" id="myModalLabel">Define new activity</h4>
+                    <h4 class="modal-title" id="myModalLabel">Define new AppBundle & Activity</h4>
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
@@ -82,7 +83,7 @@
                     names. Activities will have file and params input, and file output.
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button class="btn btn-danger" id="clearAccount">Clear account</button>
                     <button type="button" class="btn btn-primary" id="createAppBundleActivity">Define activity</button>
                 </div>
             </div>

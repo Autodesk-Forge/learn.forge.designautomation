@@ -1,16 +1,15 @@
 ﻿using Autodesk.AutoCAD.ApplicationServices.Core;
 using Autodesk.AutoCAD.DatabaseServices;
-using Autodesk.AutoCAD.EditorInput;
 using Autodesk.AutoCAD.Runtime;
 using Newtonsoft.Json;
 using System.IO;
 
-[assembly: CommandClass(typeof(Autodesk.Forge.Sample.DesignAutomation.AutoCAD.MainEntry))]
+[assembly: CommandClass(typeof(Autodesk.Forge.Sample.DesignAutomation.AutoCAD.Commands))]
 [assembly: ExtensionApplication(null)]
 
 namespace Autodesk.Forge.Sample.DesignAutomation.AutoCAD
 {
-  public class MainEntry
+    public class Commands
   {
     [CommandMethod("UpdateParam", CommandFlags.Modal)]
     public static void UpdateParam()
@@ -45,7 +44,6 @@ namespace Autodesk.Forge.Sample.DesignAutomation.AutoCAD
               {
                 dynBlockRefs.Add(id);
               }
-
             }
             if (dynBlockRefs.Count > 0)
             {
@@ -98,5 +96,3 @@ namespace Autodesk.Forge.Sample.DesignAutomation.AutoCAD
     public double Height { get; set; }
   }
 }
-
-

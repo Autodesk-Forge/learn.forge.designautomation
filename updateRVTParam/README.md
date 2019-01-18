@@ -29,7 +29,7 @@ This Revit plugin requires **RevitAPI** and **DesignAutomationBridge** reference
 Under **Properties**, at **Build Event** page, the following `Post-build event command line` will copy the DLL into the `\UpdateRVTParam.bundle/Content\` folder, create a `.ZIP` (using [7z](https://www.7-zip.org/)) and copy to the Webapp folder.
 
 ```
-xcopy /Y /F $(TargetDir)*.dll $(ProjectDir)UpdateRVTParam.bundle\Contents\del /F $(ProjectDir)..\webapp\wwwroot\bundles\UpdateRVTParam.zip"C:\Program Files\7-Zip\7z.exe" a -tzip $(ProjectDir)../webapp/wwwroot/bundles/UpdateRVTParam.zip  $(ProjectDir)UpdateRVTParam.bundle\ -xr0!*.pdb
+xcopy /Y /F $(TargetDir)*.dll $(ProjectDir)UpdateRVTParam.bundle\Contents\del /F $(ProjectDir)..\forgesample\wwwroot\bundles\UpdateRVTParam.zip"C:\Program Files\7-Zip\7z.exe" a -tzip $(ProjectDir)../forgesample/wwwroot/bundles/UpdateRVTParam.zip  $(ProjectDir)UpdateRVTParam.bundle\ -xr0!*.pdb
 ```
 
 # Further Reading

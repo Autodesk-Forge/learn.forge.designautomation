@@ -9,6 +9,9 @@
       <Content Remove="wwwroot\bundles\UpdateRVTParam.zip" />
     </ItemGroup>
     <ItemGroup>
+      <None Remove="README.md" />
+    </ItemGroup>
+    <ItemGroup>
         <Folder Include="wwwroot\" />
         <Folder Include="wwwroot\bundles\" />
     </ItemGroup>

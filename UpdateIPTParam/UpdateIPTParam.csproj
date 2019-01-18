@@ -105,10 +105,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="sampleinventordesignautomation.X.manifest" />
+    <None Include="inventor.X.manifest" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="UpdateIPTParam.bundle\Contents\Autodesk.Forge.Sample.DesignAutomation.Inventor.addin" />
+    <None Include="UpdateIPTParam.bundle\Contents\Autodesk.inventor.Inventor.addin" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="UpdateIPTParam.bundle\PackageContents.xml" />
@@ -118,7 +118,7 @@
     <PreBuildEvent>
     </PreBuildEvent>
     <PostBuildEvent>xcopy /Y /F $(TargetDir)*.dll $(ProjectDir)UpdateIPTParam.bundle\Contents\
-del /F $(ProjectDir)..\webapp\wwwroot\bundles\UpdateIPTParam.zip
-"C:\Program Files\7-Zip\7z.exe" a -tzip $(ProjectDir)../webapp/wwwroot/bundles/UpdateIPTParam.zip  $(ProjectDir)UpdateIPTParam.bundle\ -xr0!*.pdb</PostBuildEvent>
+del /F $(ProjectDir)..\forgesample\wwwroot\bundles\UpdateIPTParam.zip
+"C:\Program Files\7-Zip\7z.exe" a -tzip $(ProjectDir)../forgesample/wwwroot/bundles/UpdateIPTParam.zip  $(ProjectDir)UpdateIPTParam.bundle\ -xr0!*.pdb</PostBuildEvent>
   </PropertyGroup>
 </Project>
