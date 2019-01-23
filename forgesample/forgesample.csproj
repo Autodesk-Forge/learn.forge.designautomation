@@ -17,6 +17,8 @@
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="Autodesk.Forge" Version="1.5.2" />
+        <PackageReference Include="Autodesk.Forge.Core" Version="1.0.0-beta1" />
+        <PackageReference Include="Autodesk.Forge.DesignAutomation" Version="3.0.0-beta1" />
         <PackageReference Include="Microsoft.AspNetCore.App" />
     </ItemGroup>
 </Project>
