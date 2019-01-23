@@ -38,7 +38,7 @@ function list(control, endpoint) {
     jQuery.ajax({
         url: endpoint,
         success: function (list) {
-            if (list.length == 0)
+            if (list.length === 0)
                 $('#' + control).append($('<option>', { disabled: true, text: 'Nothing found' }));
             else
                 list.forEach(function (item) { $('#' + control).append($('<option>', { value: item, text: item })); })
@@ -111,7 +111,7 @@ function createActivity(cb) {
 
 function startWorkitem() {
     var inputFileField = document.getElementById('inputFile');
-    if (inputFileField.files.length == 0) { alert('Please select an input file'); return; }
+    if (inputFileField.files.length === 0) { alert('Please select an input file'); return; }
     if ($('#activity').val() === null) { alert('Please select an activity'); return };
     var file = inputFileField.files[0];
     startConnection(function () {
