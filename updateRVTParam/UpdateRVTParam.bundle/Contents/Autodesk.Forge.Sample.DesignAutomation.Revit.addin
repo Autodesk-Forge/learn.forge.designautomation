@@ -2,7 +2,7 @@
 <RevitAddIns>
   <AddIn Type="DBApplication">
     <Name>Modify Window Parameters</Name>
-    <FullClassName>Autodesk.Forge.Sample.DesignAutomation.Inventor.Commands</FullClassName>
+    <FullClassName>Autodesk.Forge.Sample.DesignAutomation.Revit.Commands</FullClassName>
     <Text>Revit for Design Automation</Text>
     <Description>Revit for Design Automation</Description>
     <VisibilityMode>AlwaysVisible</VisibilityMode>

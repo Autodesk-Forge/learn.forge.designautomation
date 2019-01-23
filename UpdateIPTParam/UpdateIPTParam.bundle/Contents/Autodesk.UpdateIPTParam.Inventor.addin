@@ -1,0 +1,14 @@
+<Addin Type="Plugin">
+  <!--Created for Autodesk Inventor Version 23.0-->
+  <ClassId>{84fef6aa-abf5-43be-b176-bb6f0c1d6680}</ClassId>
+  <ClientId>{84fef6aa-abf5-43be-b176-bb6f0c1d6680}</ClientId>
+  <DisplayName>UpdateIPTParam</DisplayName>
+  <Description>UpdateIPTParam</Description>
+  <Assembly>UpdateIPTParam.dll</Assembly>
+  <LoadOnStartUp>1</LoadOnStartUp>
+  <UserUnloadable>1</UserUnloadable>
+  <Hidden>0</Hidden>
+  <SupportedSoftwareVersionGreaterThan>22..</SupportedSoftwareVersionGreaterThan>
+  <DataVersion>1</DataVersion>
+  <UserInterfaceVersion>1</UserInterfaceVersion>
+</Addin>

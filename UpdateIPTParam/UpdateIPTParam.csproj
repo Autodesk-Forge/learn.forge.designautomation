@@ -105,10 +105,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="inventor.X.manifest" />
+    <None Include="UpdateIPTParam.X.manifest" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="UpdateIPTParam.bundle\Contents\Autodesk.inventor.Inventor.addin" />
+    <None Include="UpdateIPTParam.bundle\Contents\Autodesk.UpdateIPTParam.Inventor.addin" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="UpdateIPTParam.bundle\PackageContents.xml" />

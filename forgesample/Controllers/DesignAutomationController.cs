@@ -119,10 +119,10 @@ namespace forgeSample.Controllers
                     { "outputFile", outputFile }
                   },
                   engineName, new List<string>() { string.Format("{0}.{1}+{2}", NickName, appBundleName, Alias) },
-                  new Dictionary<string, dynamic>() { { "script", new { value = "UpdateParam\n" }  } },
+                  new Dictionary<string, dynamic>() { { "script", new { value = "UpdateParam\n" } } },
                   string.Format("Description for {0}", activityName), null, activityName);
-                  Activity newActivity = await activitiesApi.ActivitiesCreateItemAsync(activitySpec);
- 
+                Activity newActivity = await activitiesApi.ActivitiesCreateItemAsync(activitySpec);
+
                 // specify the alias for this Activity
                 Alias aliasSpec = new Alias(1, null, Alias);
                 Alias newAlias = await activitiesApi.ActivitiesCreateAliasAsync(activityName, aliasSpec);
