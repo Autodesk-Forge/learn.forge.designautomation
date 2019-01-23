@@ -86,7 +86,7 @@ namespace Autodesk.Forge.Sample.DesignAutomation.Revit
         /// </summary>
         private static void LogTrace(string format, params object[] args)
         {
-            // ToDo
+            System.Console.WriteLine(format, args);
         }
     }
 }
