@@ -117,8 +117,8 @@
   <PropertyGroup>
     <PreBuildEvent>
     </PreBuildEvent>
-    <PostBuildEvent>xcopy /Y /F $(TargetDir)*.dll $(ProjectDir)UpdateIPTParam.bundle\Contents\
-del /F $(ProjectDir)..\forgesample\wwwroot\bundles\UpdateIPTParam.zip
-"C:\Program Files\7-Zip\7z.exe" a -tzip $(ProjectDir)../forgesample/wwwroot/bundles/UpdateIPTParam.zip  $(ProjectDir)UpdateIPTParam.bundle\ -xr0!*.pdb</PostBuildEvent>
+    <PostBuildEvent>xcopy /Y /F "$(TargetDir)*.dll" "$(ProjectDir)UpdateIPTParam.bundle\Contents\"
+del /F "$(ProjectDir)..\forgesample\wwwroot\bundles\UpdateIPTParam.zip"
+"C:\Program Files\7-Zip\7z.exe" a -tzip "$(ProjectDir)../forgesample/wwwroot/bundles/UpdateIPTParam.zip" "$(ProjectDir)UpdateIPTParam.bundle\" -xr0!*.pdb</PostBuildEvent>
   </PropertyGroup>
 </Project>

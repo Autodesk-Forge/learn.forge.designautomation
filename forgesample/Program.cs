@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Autodesk.Forge.Core;
-using Autodesk.Forge.DesignAutomation.Rsdk;
+using Autodesk.Forge.DesignAutomation;
 
 namespace forgeSample.Controllers
 {

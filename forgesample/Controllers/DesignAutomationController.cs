@@ -17,8 +17,8 @@
 /////////////////////////////////////////////////////////////////////
 
 using Autodesk.Forge;
-using Autodesk.Forge.DesignAutomation.Rsdk;
-using Autodesk.Forge.DesignAutomation.Rsdk.Model;
+using Autodesk.Forge.DesignAutomation;
+using Autodesk.Forge.DesignAutomation.Model;
 using Autodesk.Forge.Model;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -32,12 +32,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Activity = Autodesk.Forge.DesignAutomation.Rsdk.Model.Activity;
-using Alias = Autodesk.Forge.DesignAutomation.Rsdk.Model.Alias;
-using AppBundle = Autodesk.Forge.DesignAutomation.Rsdk.Model.AppBundle;
-using Parameter = Autodesk.Forge.DesignAutomation.Rsdk.Model.Parameter;
-using WorkItem = Autodesk.Forge.DesignAutomation.Rsdk.Model.WorkItem;
-using WorkItemStatus = Autodesk.Forge.DesignAutomation.Rsdk.Model.WorkItemStatus;
+using Activity = Autodesk.Forge.DesignAutomation.Model.Activity;
+using Alias = Autodesk.Forge.DesignAutomation.Model.Alias;
+using AppBundle = Autodesk.Forge.DesignAutomation.Model.AppBundle;
+using Parameter = Autodesk.Forge.DesignAutomation.Model.Parameter;
+using WorkItem = Autodesk.Forge.DesignAutomation.Model.WorkItem;
+using WorkItemStatus = Autodesk.Forge.DesignAutomation.Model.WorkItemStatus;
 
 
 namespace forgeSample.Controllers
