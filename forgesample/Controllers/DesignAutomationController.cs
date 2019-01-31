@@ -58,6 +58,10 @@ namespace forgeSample.Controllers
         // Design Automation v3 API
         DesignAutomationClient _designAutomation;
 
+        // KDV _ not sure if this is ideal, but easy way to store filename create time
+        // Cache for creation time used for output filename. Used for workitem and then to retrieve the result file. 
+        private static string _createTime;
+
         // Constructor, where env and hubContext are specified
         public DesignAutomationController(IHostingEnvironment env, IHubContext<DesignAutomationHub> hubContext, DesignAutomationClient api)
         {
@@ -106,24 +110,55 @@ namespace forgeSample.Controllers
                 // define the activity
                 // ToDo: parametrize for different engines...
                 dynamic engineAttributes = EngineAttributes(engineName);
-                string commandLine = string.Format(@"$(engine.path)\\{0} /i $(args[inputFile].path) /al $(appbundles[{1}].path) /s $(settings[script].path)", engineAttributes.executable, appBundleName);
-                Activity activitySpec = new Activity()
+                string commandLine;
+                Activity activitySpec;
+                if (engineName.Contains("3dsMax"))
                 {
-                    Id = activityName,
-                    Appbundles = new List<string>() { string.Format("{0}.{1}+{2}", NickName, appBundleName, Alias) },
-                    CommandLine = new List<string>() { commandLine },
-                    Engine = engineName,
-                    Parameters = new Dictionary<string, Parameter>()
+                    // Note, 3ds Max DA engine does not need to specify app bundle in commandline.
+                    commandLine = string.Format(@"$(engine.path)\\{0} -sceneFile $(args[inputFile].path) $(settings[script].path)", engineAttributes.executable);
+                    activitySpec = new Activity()
                     {
-                        { "inputFile", new Parameter() { Description = "input file", LocalName = "$(inputFile)", Ondemand = false, Required = true, Verb = Verb.Get, Zip = false } },
-                        { "inputJson", new Parameter() { Description = "input json", LocalName = "params.json", Ondemand = false, Required = false, Verb = Verb.Get, Zip = false } },
-                        { "outputFile", new Parameter() { Description = "output file", LocalName = "outputFile." + engineAttributes.extension, Ondemand = false, Required = true, Verb = Verb.Put, Zip = false } }
-                    },
-                    Settings = new Dictionary<string, ISetting>()
+                        Id = activityName,
+                        Appbundles = new List<string>() { string.Format("{0}.{1}+{2}", NickName, appBundleName, Alias) },
+                        CommandLine = new List<string>() { commandLine },
+                        Engine = engineName,
+                        Parameters = new Dictionary<string, Parameter>()
+                        {
+                            { "inputFile", new Parameter() { Description = "input file", LocalName = "$(inputFile)", Ondemand = false, Required = true, Verb = Verb.Get, Zip = false } },
+                            { "inputJson", new Parameter() { Description = "input json", LocalName = "params.json", Ondemand = false, Required = false, Verb = Verb.Get, Zip = false } },
+                            { "outputFile", new Parameter() { Description = "output file", LocalName = "outputFile." + engineAttributes.extension, Ondemand = false, Required = true, Verb = Verb.Put, Zip = false } }
+                        },
+                        Settings = new Dictionary<string, ISetting>()
+                        {
+                            { "script", new StringSetting(){ Value = "da = dotNetClass(\"Autodesk.Forge.Sample.DesignAutomation.Max.RuntimeExecute\")\n" +
+                                                                     "da.ModifyWindowWidthHeight()\n"
+                                                           }
+                            }
+                        }
+                    };
+                } else
+                {
+                    commandLine = string.Format(@"$(engine.path)\\{0} /i $(args[inputFile].path) /al $(appbundles[{1}].path) /s $(settings[script].path)", engineAttributes.executable, appBundleName);
+                    activitySpec = new Activity()
                     {
-                        { "script", new StringSetting(){ Value = "UpdateParam\n"  }  }
-                    }
-                };
+                        Id = activityName,
+                        Appbundles = new List<string>() { string.Format("{0}.{1}+{2}", NickName, appBundleName, Alias) },
+                        CommandLine = new List<string>() { commandLine },
+                        Engine = engineName,
+                        Parameters = new Dictionary<string, Parameter>()
+                        {
+                            { "inputFile", new Parameter() { Description = "input file", LocalName = "$(inputFile)", Ondemand = false, Required = true, Verb = Verb.Get, Zip = false } },
+                            { "inputJson", new Parameter() { Description = "input json", LocalName = "params.json", Ondemand = false, Required = false, Verb = Verb.Get, Zip = false } },
+                            { "outputFile", new Parameter() { Description = "output file", LocalName = "outputFile." + engineAttributes.extension, Ondemand = false, Required = true, Verb = Verb.Put, Zip = false } }
+                        },
+                        Settings = new Dictionary<string, ISetting>()
+                        {
+                            { "script", new StringSetting(){ Value = "UpdateParam"}}
+                        }
+                    };
+                }
+
+
                 Activity newActivity = await _designAutomation.CreateActivityAsync(activitySpec);
 
                 // specify the alias for this Activity
@@ -143,7 +178,7 @@ namespace forgeSample.Controllers
         /// </summary>
         private dynamic EngineAttributes(string engine)
         {
-            if (engine.Contains("3dsMax")) return new { executable = "3dsmaxbatch.exe", extension = "3ds" };
+            if (engine.Contains("3dsMax")) return new { executable = "3dsmaxbatch.exe", extension = "max" };
             if (engine.Contains("AutoCAD")) return new { executable = "accoreconsole.exe", extension = "dwg" };
             if (engine.Contains("Inventor")) return new { executable = "InventorCoreConsole.exe", extension = "ipt" };
             if (engine.Contains("Revit")) return new { executable = "revitcoreconsole.exe", extension = "rvt" };
@@ -291,7 +326,8 @@ namespace forgeSample.Controllers
                 Url = "data:application/json, " + ((JObject)inputJson).ToString(Formatting.None).Replace("\"", "'")
             };
             // 3. output file
-            string outputFileNameOSS = string.Format("{0}_output_{1}", DateTime.Now.ToString("yyyyMMddhhmmss"), Path.GetFileName(input.inputFile.FileName)); // avoid overriding
+            _createTime = DateTime.Now.ToString("yyyyMMddhhmmss");
+            string outputFileNameOSS = string.Format("{0}_output_{1}", _createTime, Path.GetFileName(input.inputFile.FileName)); // avoid overriding
             XrefTreeArgument outputFileArgument = new XrefTreeArgument()
             {
                 Url = string.Format("https://developer.api.autodesk.com/oss/v2/buckets/{0}/objects/{1}", bucketKey, outputFileNameOSS),
@@ -316,8 +352,27 @@ namespace forgeSample.Controllers
                 }
             };
             WorkItemStatus workItemStatus = await _designAutomation.CreateWorkItemsAsync(workItemSpec);
-
+            
             return Ok(new { WorkItemId = workItemStatus.Id });
+        }
+
+        /// <summary>
+        /// Get Results from OSS to local resource
+        /// </summary>
+        // KDV - URL probably needs better naming...
+        [HttpGet]
+        [Route("api/forge/dm/download")]
+        public async Task<IActionResult> GetResults()
+        {
+            dynamic oauth = await OAuthController.GetInternalAsync();
+            string bucketKey = NickName.ToLower() + "_designautomation";
+            string outputFileNameOSS = string.Format("{0}_output_{1}", _createTime, "max sample file.max"); // avoid overriding
+            ObjectsApi objects = new ObjectsApi();
+            objects.Configuration.AccessToken = oauth.access_token;
+            System.IO.FileStream result = objects.GetObject(bucketKey, outputFileNameOSS);
+            if (result == null)
+                return NotFound();
+            return Ok(result.Name); 
         }
 
         /// <summary>
@@ -365,7 +420,7 @@ namespace forgeSample.Controllers
         }
 
         /// <summary>
-        /// Clear the accounts (for debugging purpouses)
+        /// Clear the accounts (for debugging purposes)
         /// </summary>
         [HttpDelete]
         [Route("api/forge/designautomation/account")]

@@ -43,9 +43,9 @@ namespace Autodesk.Forge.Sample.DesignAutomation.Max
         public float Height { get; set; }
     }
     /// <summary>
-    /// Changes parameters in automted way. 
+    /// Changes parameters in automated way. 
     /// Iterate entire scene to get all nodes
-    /// In this example we specifically find Casement Windows wby object class ID
+    /// In this example we specifically find Casement Windows by object class ID
     /// Then modify the width and height based on inputs.
     /// 
     /// Could be expanded to find other window types, other objects, etc.
@@ -71,7 +71,7 @@ namespace Autodesk.Forge.Sample.DesignAutomation.Max
         /// </summary>
         /// <param name="width">The new Width to set the Window</param>
         /// <param name="height">The new Height to set the Window</param>
-        /// <returns></returns>
+        /// <returns>window count</returns>
         static public int UpdateWindowNodes(float width, float height)
         {
             IGlobal globalInterface = Autodesk.Max.GlobalInterface.Instance;
@@ -103,15 +103,19 @@ namespace Autodesk.Forge.Sample.DesignAutomation.Max
             }
 
             // If there are windows, save the window updates
-            bool status;
+            int status;
             if (sceneWindows.Count() > 0)
             {
-                status = coreInterface.FileSave;
-                if (status == false)
+                // The output file name must match what the Design Automation work item is specifying as output file.
+                string full_filename = coreInterface.CurFilePath;
+                string filename = coreInterface.CurFileName;
+                string new_filename = full_filename.Replace(filename, "outputFile.max");
+                status = coreInterface.SaveToFile(new_filename, true, false);
+                if (status == 0) //error
                     return -1;
             }
 
-            // This inidcates how many windows were modified.
+            // return how many windows were modified.
             return sceneWindows.Count();
         }
 
@@ -119,7 +123,7 @@ namespace Autodesk.Forge.Sample.DesignAutomation.Max
 
     /// <summary>
     /// This class is used to execute the automation. Above class could be connected to UI elements, or run by scripts directly.
-    /// This class takes the iput from JSON input and uses those values. This way it is more cohesive to web development.
+    /// This class takes the input from JSON input and uses those values. This way it is more cohesive to web development.
     /// </summary>
     static public class RuntimeExecute
     {
@@ -134,64 +138,36 @@ namespace Autodesk.Forge.Sample.DesignAutomation.Max
                 // read input parameters from JSON file
                 InputParams inputParams = JsonConvert.DeserializeObject<InputParams>(File.ReadAllText("params.json"));
 
-                // Uncomment following to use if you want to test without JSON input.
-                //InputParams inputParams = new InputParams();
-                //inputParams.Height = 200.0f;
-                //inputParams.Width = 150.0f;
-
                 count = ParameterChanger.UpdateWindowNodes(inputParams.Width, inputParams.Height);
 
             }
             catch (Exception e)
             {
-                System.Diagnostics.Debug.Write(e.Message);
+                LogTrace("Exception Error: " + e.Message);
                 return -1; //fail
             }
+            
 
-
-
+            LogTrace("Changed {0} Window objects.", count);
             return count; // 0+ means success, and how many objects were changed.
         }
-
-
-        // Not used by this code, but is useful when exploring the APIs
         /// <summary>
-        /// Input an obj to reflect
+        /// Information sent to this LogTrace will appear on the Design Automation output
         /// </summary>
-        /// <param name="obj"> Input object to reflect. </param>
-        /// <returns> 1 </returns>
-        static public int ReflectAPI(object obj)
+        private static void LogTrace(string format, params object[] args)
         {
-            try
-            {
+            System.Reflection.Assembly a = System.Reflection.Assembly.GetExecutingAssembly();
+            string output_msg = string.Format("DLL {0} compiled on {1}; {2}",
+                System.IO.Path.GetFileName(a.Location),
+                File.GetLastWriteTime(a.Location), 
+                string.Format(format, args));
 
-
-                System.Reflection.PropertyInfo[] propertyInfo = obj.GetType().GetProperties();
-                string strOutput;
-
-                strOutput = "\n The object is of type: " + obj.GetType().ToString() + " has the following reflected property info: ";
-                for (int i = 0; i < propertyInfo.Length; i++)
-                {
-                    string name = propertyInfo[i].Name;
-                    string s;
-                    try
-                    {
-                        s = obj.GetType().InvokeMember(name, System.Reflection.BindingFlags.GetProperty, null, obj, null).ToString();
-                        strOutput += "\n    " + name + ":  " + s + "  IsSpecialName == " + propertyInfo[i].IsSpecialName.ToString();
-                    }
-                    catch (System.Exception invokeMemberException)
-                    {
-                        strOutput += "\n" + name + ": EXCEPTION: " + invokeMemberException.Message;
-                    }
-                }
-                System.Diagnostics.Debug.Write(strOutput);
-            }
-            catch (Exception e)
-            {
-                System.Diagnostics.Debug.Write(e.Message);
-            }
-
-            return 1;
+            IGlobal globalInterface = Autodesk.Max.GlobalInterface.Instance;
+            IInterface14 coreInterface = globalInterface.COREInterface14;
+            ILogSys log = coreInterface.Log;
+            // Note flags are necessary to produce Design Automation output. This is same as C++:
+            // SYSLOG_INFO | SYSLOG_IGNORE_VERBOSITY | SYSLOG_BROADCAST
+            log.LogEntry(0x00000004 | 0x00040000 | 0x00010000, false, "", output_msg);
         }
     }
 }
