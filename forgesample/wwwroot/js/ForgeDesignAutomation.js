@@ -23,6 +23,7 @@ $(document).ready(function () {
     $('#defineActivityShow').click(defineActivityModal);
     $('#createAppBundleActivity').click(createAppBundleActivity);
     $('#startWorkitem').click(startWorkitem);
+    $('#getResults').click(getResults);
 
     startConnection();
 });
@@ -134,6 +135,20 @@ function startWorkitem() {
                 writeLog('Workitem started: ' + res.workItemId);
             }
         });
+    });
+}
+
+// KDV - URL probably needs better naming...
+function getResults() {
+    jQuery.ajax({
+        url: 'api/forge/dm/download',
+        method: 'GET',
+        success: function (res) {
+            writeLog('Result file copied here: ' + res);
+        },
+        error: function () {
+            alert('No Results were found. Make sure to run the workitem first and look at the log to ensure no errors.'); 
+        }
     });
 }
 
