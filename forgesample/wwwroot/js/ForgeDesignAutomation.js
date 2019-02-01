@@ -158,8 +158,8 @@ function startConnection(onReady) {
                 });
         });
 
-    connection.on("onProgress", function (message) {
-        writeLog(message);
+    connection.on("downloadResult", function (url) {
+        writeLog('<a href="' + url +'">Download result file here</a>');
     });
 
     connection.on("onComplete", function (message) {

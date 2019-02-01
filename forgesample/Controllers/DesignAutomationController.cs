@@ -106,7 +106,7 @@ namespace forgeSample.Controllers
                 // define the activity
                 // ToDo: parametrize for different engines...
                 dynamic engineAttributes = EngineAttributes(engineName);
-                string commandLine = string.Format(@"$(engine.path)\\{0} /i $(args[inputFile].path) /al $(appbundles[{1}].path) /s $(settings[script].path)", engineAttributes.executable, appBundleName);
+                string commandLine = string.Format(engineAttributes.commandLine, appBundleName);
                 Activity activitySpec = new Activity()
                 {
                     Id = activityName,
@@ -121,7 +121,7 @@ namespace forgeSample.Controllers
                     },
                     Settings = new Dictionary<string, ISetting>()
                     {
-                        { "script", new StringSetting(){ Value = "UpdateParam\n"  }  }
+                        { "script", new StringSetting(){ Value = engineAttributes.script } }
                     }
                 };
                 Activity newActivity = await _designAutomation.CreateActivityAsync(activitySpec);
@@ -143,10 +143,10 @@ namespace forgeSample.Controllers
         /// </summary>
         private dynamic EngineAttributes(string engine)
         {
-            if (engine.Contains("3dsMax")) return new { executable = "3dsmaxbatch.exe", extension = "3ds" };
-            if (engine.Contains("AutoCAD")) return new { executable = "accoreconsole.exe", extension = "dwg" };
-            if (engine.Contains("Inventor")) return new { executable = "InventorCoreConsole.exe", extension = "ipt" };
-            if (engine.Contains("Revit")) return new { executable = "revitcoreconsole.exe", extension = "rvt" };
+            if (engine.Contains("3dsMax")) return new { commandLine = @"$(engine.path)\\3dsmaxbatch.exe -sceneFile $(args[inputFile].path) $(settings[script].path)", extension = "max", script = "da = dotNetClass(\"Autodesk.Forge.Sample.DesignAutomation.Max.RuntimeExecute\")\nda.ModifyWindowWidthHeight()\n" };
+            if (engine.Contains("AutoCAD")) return new { commandLine = "$(engine.path)\\accoreconsole.exe /i $(args[inputFile].path) /al $(appbundles[{0}].path) /s $(settings[script].path)", extension = "dwg", script = "UpdateParam\n" };
+            if (engine.Contains("Inventor")) return new { commandLine = "$(engine.path)\\InventorCoreConsole.exe /i $(args[inputFile].path) /al $(appbundles[{0}].path)", extension = "ipt", script = string.Empty };
+            if (engine.Contains("Revit")) return new { commandLine = "$(engine.path)\\revitcoreconsole.exe /i $(args[inputFile].path) /al $(appbundles[{0}].path)", extension = "rvt", script = string.Empty };
             throw new Exception("Invalid engine");
         }
 
@@ -303,7 +303,7 @@ namespace forgeSample.Controllers
             };
 
             // prepare & submit workitem
-            string callbackUrl = string.Format("{0}/api/forge/callback/designautomation?id={1}", OAuthController.GetAppSetting("FORGE_WEBHOOK_CALLBACK_HOST"), browerConnectionId);
+            string callbackUrl = string.Format("{0}/api/forge/callback/designautomation?id={1}&outputFileName={2}", OAuthController.GetAppSetting("FORGE_WEBHOOK_CALLBACK_HOST"), browerConnectionId, outputFileNameOSS);
             WorkItem workItemSpec = new WorkItem()
             {
                 ActivityId = activityName,
@@ -325,7 +325,7 @@ namespace forgeSample.Controllers
         /// </summary>
         [HttpPost]
         [Route("/api/forge/callback/designautomation")]
-        public async Task<IActionResult> OnCallback(string id, [FromBody]dynamic body)
+        public async Task<IActionResult> OnCallback(string id, string outputFileName, [FromBody]dynamic body)
         {
             try
             {
@@ -336,11 +336,13 @@ namespace forgeSample.Controllers
                 var client = new RestClient(bodyJson["reportUrl"].Value<string>());
                 var request = new RestRequest(string.Empty);
 
-                Console.WriteLine(id);
-
                 byte[] bs = client.DownloadData(request);
                 string report = System.Text.Encoding.Default.GetString(bs);
                 await _hubContext.Clients.Client(id).SendAsync("onComplete", report);
+
+                ObjectsApi objectsApi = new ObjectsApi();
+                dynamic signedUrl = await objectsApi.CreateSignedResourceAsyncWithHttpInfo(NickName.ToLower() + "_designautomation", outputFileName, new PostBucketsSigned(10), "read");
+                await _hubContext.Clients.Client(id).SendAsync("downloadResult", (string)(signedUrl.Data.signedUrl));
             }
             catch (Exception e) { }
 
@@ -365,7 +367,7 @@ namespace forgeSample.Controllers
         }
 
         /// <summary>
-        /// Clear the accounts (for debugging purpouses)
+        /// Clear the accounts (for debugging purposes)
         /// </summary>
         [HttpDelete]
         [Route("api/forge/designautomation/account")]

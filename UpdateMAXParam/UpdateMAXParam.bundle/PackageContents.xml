@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ApplicationPackage 	SchemaVersion="1.0" 	AutodeskProduct="3ds Max" Name="Sample Design Automation Plugin for 3ds Max" Description="A sample package to update parameters of a 3ds Max scene file containing a casement window"	AppVersion="2019.0.0" 	FriendlyVersion="2019.0.0" 	ProductType="Application" 	SupportedLocales="Enu" 	AppNameSpace="apps.autodesk.com" 	Author="Autodesk Forge" ProductCode="{6A8D06F4-C3DD-42DD-A69E-9B9617A7ABC0}"	UpgradeCode="{CE88CEA5-47F6-423E-B9EC-E9FA683B5228}" >
+  <CompanyDetails Name="Autodesk"		Phone=" "		Url="http://forge.autodesk.com"		Email="forge.help@autodesk.com" />
+  <RuntimeRequirements OS="Win64" Platform="3ds Max|3ds Max Design" SeriesMin="2019" SeriesMax="2019" />
+	<Components Description="assemblies parts">
+		<RuntimeRequirements OS="Win64" Platform="3ds Max" SeriesMin="2019" SeriesMax="2019" />
+		<ComponentEntry AppName="UpdateMAXParam" Version="2019.0.0" ModuleName="./Contents/UpdateMAXParam.dll" AppDescription="The Sample Design Automation Plugin managed assembly module" />
+  </Components>
+</ApplicationPackage>
