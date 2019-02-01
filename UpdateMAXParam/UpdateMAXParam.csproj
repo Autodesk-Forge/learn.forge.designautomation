@@ -74,12 +74,11 @@
   <ItemGroup>
     <Folder Include="UpdateMAXParam.bundle\Contents\" />
   </ItemGroup>
-  
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy /Y /F $(TargetDir)*.dll $(ProjectDir)UpdateMAXParam.bundle\Contents\
-del /F $(ProjectDir)..\forgesample\wwwroot\bundles\UpdateMAXParam.zip
-"C:\Program Files\7-Zip\7z.exe" a -tzip $(ProjectDir)../forgesample/wwwroot/bundles/UpdateMAXParam.zip  $(ProjectDir)UpdateMAXParam.bundle\ -xr0!*.pdb</PostBuildEvent>
+    <PostBuildEvent>xcopy /Y /F "$(TargetDir)*.dll" "$(ProjectDir)UpdateMAXParam.bundle\Contents\"
+del /F "$(ProjectDir)..\forgesample\wwwroot\bundles\UpdateMAXParam.zip"
+"C:\Program Files\7-Zip\7z.exe" a -tzip "$(ProjectDir)../forgesample/wwwroot/bundles/UpdateMAXParam.zip" "$(ProjectDir)UpdateMAXParam.bundle\" -xr0!*.pdb</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

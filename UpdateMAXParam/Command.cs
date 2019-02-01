@@ -1,27 +1,20 @@
-﻿#region Copyright
-//      .NET Sample
+﻿/////////////////////////////////////////////////////////////////////
+// Copyright (c) Autodesk, Inc. All rights reserved
+// Written by Forge Partner Development
 //
-//      Copyright (c) 2019 by Autodesk, Inc.
+// Permission to use, copy, modify, and distribute this software in
+// object code form for any purpose and without fee is hereby granted,
+// provided that the above copyright notice appears in all copies and
+// that both that copyright notice and the limited warranty and
+// restricted rights notice below appear in all supporting
+// documentation.
 //
-//      Permission to use, copy, modify, and distribute this software
-//      for any purpose and without fee is hereby granted, provided
-//      that the above copyright notice appears in all copies and
-//      that both that copyright notice and the limited warranty and
-//      restricted rights notice below appear in all supporting
-//      documentation.
-//
-//      AUTODESK PROVIDES THIS PROGRAM "AS IS" AND WITH ALL FAULTS.
-//      AUTODESK SPECIFICALLY DISCLAIMS ANY IMPLIED WARRANTY OF
-//      MERCHANTABILITY OR FITNESS FOR A PARTICULAR USE.  AUTODESK, INC.
-//      DOES NOT WARRANT THAT THE OPERATION OF THE PROGRAM WILL BE
-//      UNINTERRUPTED OR ERROR FREE.
-//
-//      Use, duplication, or disclosure by the U.S. Government is subject to
-//      restrictions set forth in FAR 52.227-19 (Commercial Computer
-//      Software - Restricted Rights) and DFAR 252.227-7013(c)(1)(ii)
-//      (Rights in Technical Data and Computer Software), as applicable.
-//
-#endregion
+// AUTODESK PROVIDES THIS PROGRAM "AS IS" AND WITH ALL FAULTS.
+// AUTODESK SPECIFICALLY DISCLAIMS ANY IMPLIED WARRANTY OF
+// MERCHANTABILITY OR FITNESS FOR A PARTICULAR USE.  AUTODESK, INC.
+// DOES NOT WARRANT THAT THE OPERATION OF THE PROGRAM WILL BE
+// UNINTERRUPTED OR ERROR FREE.
+/////////////////////////////////////////////////////////////////////
 
 using System;
 using System.Collections.Generic;
@@ -134,21 +127,16 @@ namespace Autodesk.Forge.Sample.DesignAutomation.Max
             // Run entire code block with try/catch to help determine errors
             try
             {
-
                 // read input parameters from JSON file
                 InputParams inputParams = JsonConvert.DeserializeObject<InputParams>(File.ReadAllText("params.json"));
-
                 count = ParameterChanger.UpdateWindowNodes(inputParams.Width, inputParams.Height);
-
             }
             catch (Exception e)
             {
                 LogTrace("Exception Error: " + e.Message);
                 return -1; //fail
             }
-            
-
-            LogTrace("Changed {0} Window objects.", count);
+            LogTrace("Changed {0} window objects.", count);
             return count; // 0+ means success, and how many objects were changed.
         }
         /// <summary>
@@ -156,18 +144,12 @@ namespace Autodesk.Forge.Sample.DesignAutomation.Max
         /// </summary>
         private static void LogTrace(string format, params object[] args)
         {
-            System.Reflection.Assembly a = System.Reflection.Assembly.GetExecutingAssembly();
-            string output_msg = string.Format("DLL {0} compiled on {1}; {2}",
-                System.IO.Path.GetFileName(a.Location),
-                File.GetLastWriteTime(a.Location), 
-                string.Format(format, args));
-
             IGlobal globalInterface = Autodesk.Max.GlobalInterface.Instance;
             IInterface14 coreInterface = globalInterface.COREInterface14;
             ILogSys log = coreInterface.Log;
             // Note flags are necessary to produce Design Automation output. This is same as C++:
             // SYSLOG_INFO | SYSLOG_IGNORE_VERBOSITY | SYSLOG_BROADCAST
-            log.LogEntry(0x00000004 | 0x00040000 | 0x00010000, false, "", output_msg);
+            log.LogEntry(0x00000004 | 0x00040000 | 0x00010000, false, "", string.Format(format, args));
         }
     }
 }

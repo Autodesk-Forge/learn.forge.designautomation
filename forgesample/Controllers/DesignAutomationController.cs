@@ -110,55 +110,24 @@ namespace forgeSample.Controllers
                 // define the activity
                 // ToDo: parametrize for different engines...
                 dynamic engineAttributes = EngineAttributes(engineName);
-                string commandLine;
-                Activity activitySpec;
-                if (engineName.Contains("3dsMax"))
+                string commandLine = string.Format(engineAttributes.commandLine, appBundleName);
+                Activity activitySpec = new Activity()
                 {
-                    // Note, 3ds Max DA engine does not need to specify app bundle in commandline.
-                    commandLine = string.Format(@"$(engine.path)\\{0} -sceneFile $(args[inputFile].path) $(settings[script].path)", engineAttributes.executable);
-                    activitySpec = new Activity()
+                    Id = activityName,
+                    Appbundles = new List<string>() { string.Format("{0}.{1}+{2}", NickName, appBundleName, Alias) },
+                    CommandLine = new List<string>() { commandLine },
+                    Engine = engineName,
+                    Parameters = new Dictionary<string, Parameter>()
                     {
-                        Id = activityName,
-                        Appbundles = new List<string>() { string.Format("{0}.{1}+{2}", NickName, appBundleName, Alias) },
-                        CommandLine = new List<string>() { commandLine },
-                        Engine = engineName,
-                        Parameters = new Dictionary<string, Parameter>()
-                        {
-                            { "inputFile", new Parameter() { Description = "input file", LocalName = "$(inputFile)", Ondemand = false, Required = true, Verb = Verb.Get, Zip = false } },
-                            { "inputJson", new Parameter() { Description = "input json", LocalName = "params.json", Ondemand = false, Required = false, Verb = Verb.Get, Zip = false } },
-                            { "outputFile", new Parameter() { Description = "output file", LocalName = "outputFile." + engineAttributes.extension, Ondemand = false, Required = true, Verb = Verb.Put, Zip = false } }
-                        },
-                        Settings = new Dictionary<string, ISetting>()
-                        {
-                            { "script", new StringSetting(){ Value = "da = dotNetClass(\"Autodesk.Forge.Sample.DesignAutomation.Max.RuntimeExecute\")\n" +
-                                                                     "da.ModifyWindowWidthHeight()\n"
-                                                           }
-                            }
-                        }
-                    };
-                } else
-                {
-                    commandLine = string.Format(@"$(engine.path)\\{0} /i $(args[inputFile].path) /al $(appbundles[{1}].path) /s $(settings[script].path)", engineAttributes.executable, appBundleName);
-                    activitySpec = new Activity()
+                        { "inputFile", new Parameter() { Description = "input file", LocalName = "$(inputFile)", Ondemand = false, Required = true, Verb = Verb.Get, Zip = false } },
+                        { "inputJson", new Parameter() { Description = "input json", LocalName = "params.json", Ondemand = false, Required = false, Verb = Verb.Get, Zip = false } },
+                        { "outputFile", new Parameter() { Description = "output file", LocalName = "outputFile." + engineAttributes.extension, Ondemand = false, Required = true, Verb = Verb.Put, Zip = false } }
+                    },
+                    Settings = new Dictionary<string, ISetting>()
                     {
-                        Id = activityName,
-                        Appbundles = new List<string>() { string.Format("{0}.{1}+{2}", NickName, appBundleName, Alias) },
-                        CommandLine = new List<string>() { commandLine },
-                        Engine = engineName,
-                        Parameters = new Dictionary<string, Parameter>()
-                        {
-                            { "inputFile", new Parameter() { Description = "input file", LocalName = "$(inputFile)", Ondemand = false, Required = true, Verb = Verb.Get, Zip = false } },
-                            { "inputJson", new Parameter() { Description = "input json", LocalName = "params.json", Ondemand = false, Required = false, Verb = Verb.Get, Zip = false } },
-                            { "outputFile", new Parameter() { Description = "output file", LocalName = "outputFile." + engineAttributes.extension, Ondemand = false, Required = true, Verb = Verb.Put, Zip = false } }
-                        },
-                        Settings = new Dictionary<string, ISetting>()
-                        {
-                            { "script", new StringSetting(){ Value = "UpdateParam"}}
-                        }
-                    };
-                }
-
-
+                        { "script", new StringSetting(){ Value = engineAttributes.script } }
+                    }
+                };
                 Activity newActivity = await _designAutomation.CreateActivityAsync(activitySpec);
 
                 // specify the alias for this Activity
@@ -178,10 +147,10 @@ namespace forgeSample.Controllers
         /// </summary>
         private dynamic EngineAttributes(string engine)
         {
-            if (engine.Contains("3dsMax")) return new { executable = "3dsmaxbatch.exe", extension = "max" };
-            if (engine.Contains("AutoCAD")) return new { executable = "accoreconsole.exe", extension = "dwg" };
-            if (engine.Contains("Inventor")) return new { executable = "InventorCoreConsole.exe", extension = "ipt" };
-            if (engine.Contains("Revit")) return new { executable = "revitcoreconsole.exe", extension = "rvt" };
+            if (engine.Contains("3dsMax")) return new { commandLine = @"$(engine.path)\\3dsmaxbatch.exe -sceneFile $(args[inputFile].path) $(settings[script].path)", extension = "max", script = "da = dotNetClass(\"Autodesk.Forge.Sample.DesignAutomation.Max.RuntimeExecute\")\nda.ModifyWindowWidthHeight()\n" };
+            if (engine.Contains("AutoCAD")) return new { commandLine = "$(engine.path)\\accoreconsole.exe /i $(args[inputFile].path) /al $(appbundles[{0}].path) /s $(settings[script].path)", extension = "dwg", script = "UpdateParam\n" };
+            if (engine.Contains("Inventor")) return new { commandLine = "$(engine.path)\\InventorCoreConsole.exe /i $(args[inputFile].path) /al $(appbundles[{0}].path)", extension = "ipt", script = string.Empty };
+            if (engine.Contains("Revit")) return new { commandLine = "$(engine.path)\\revitcoreconsole.exe /i $(args[inputFile].path) /al $(appbundles[{0}].path)", extension = "rvt", script = string.Empty };
             throw new Exception("Invalid engine");
         }
 
@@ -352,7 +321,7 @@ namespace forgeSample.Controllers
                 }
             };
             WorkItemStatus workItemStatus = await _designAutomation.CreateWorkItemsAsync(workItemSpec);
-            
+
             return Ok(new { WorkItemId = workItemStatus.Id });
         }
 
@@ -372,7 +341,7 @@ namespace forgeSample.Controllers
             System.IO.FileStream result = objects.GetObject(bucketKey, outputFileNameOSS);
             if (result == null)
                 return NotFound();
-            return Ok(result.Name); 
+            return Ok(result.Name);
         }
 
         /// <summary>
