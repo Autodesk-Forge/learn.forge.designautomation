@@ -58,10 +58,6 @@ namespace forgeSample.Controllers
         // Design Automation v3 API
         DesignAutomationClient _designAutomation;
 
-        // KDV _ not sure if this is ideal, but easy way to store filename create time
-        // Cache for creation time used for output filename. Used for workitem and then to retrieve the result file. 
-        private static string _createTime;
-
         // Constructor, where env and hubContext are specified
         public DesignAutomationController(IHostingEnvironment env, IHubContext<DesignAutomationHub> hubContext, DesignAutomationClient api)
         {
@@ -295,8 +291,7 @@ namespace forgeSample.Controllers
                 Url = "data:application/json, " + ((JObject)inputJson).ToString(Formatting.None).Replace("\"", "'")
             };
             // 3. output file
-            _createTime = DateTime.Now.ToString("yyyyMMddhhmmss");
-            string outputFileNameOSS = string.Format("{0}_output_{1}", _createTime, Path.GetFileName(input.inputFile.FileName)); // avoid overriding
+            string outputFileNameOSS = string.Format("{0}_output_{1}", DateTime.Now.ToString("yyyyMMddhhmmss"), Path.GetFileName(input.inputFile.FileName)); // avoid overriding
             XrefTreeArgument outputFileArgument = new XrefTreeArgument()
             {
                 Url = string.Format("https://developer.api.autodesk.com/oss/v2/buckets/{0}/objects/{1}", bucketKey, outputFileNameOSS),
@@ -308,7 +303,7 @@ namespace forgeSample.Controllers
             };
 
             // prepare & submit workitem
-            string callbackUrl = string.Format("{0}/api/forge/callback/designautomation?id={1}", OAuthController.GetAppSetting("FORGE_WEBHOOK_CALLBACK_HOST"), browerConnectionId);
+            string callbackUrl = string.Format("{0}/api/forge/callback/designautomation?id={1}&outputFileName={2}", OAuthController.GetAppSetting("FORGE_WEBHOOK_CALLBACK_HOST"), browerConnectionId, outputFileNameOSS);
             WorkItem workItemSpec = new WorkItem()
             {
                 ActivityId = activityName,
@@ -326,30 +321,11 @@ namespace forgeSample.Controllers
         }
 
         /// <summary>
-        /// Get Results from OSS to local resource
-        /// </summary>
-        // KDV - URL probably needs better naming...
-        [HttpGet]
-        [Route("api/forge/dm/download")]
-        public async Task<IActionResult> GetResults()
-        {
-            dynamic oauth = await OAuthController.GetInternalAsync();
-            string bucketKey = NickName.ToLower() + "_designautomation";
-            string outputFileNameOSS = string.Format("{0}_output_{1}", _createTime, "max sample file.max"); // avoid overriding
-            ObjectsApi objects = new ObjectsApi();
-            objects.Configuration.AccessToken = oauth.access_token;
-            System.IO.FileStream result = objects.GetObject(bucketKey, outputFileNameOSS);
-            if (result == null)
-                return NotFound();
-            return Ok(result.Name);
-        }
-
-        /// <summary>
         /// Callback from Design Automation Workitem (onProgress or onComplete)
         /// </summary>
         [HttpPost]
         [Route("/api/forge/callback/designautomation")]
-        public async Task<IActionResult> OnCallback(string id, [FromBody]dynamic body)
+        public async Task<IActionResult> OnCallback(string id, string outputFileName, [FromBody]dynamic body)
         {
             try
             {
@@ -360,11 +336,13 @@ namespace forgeSample.Controllers
                 var client = new RestClient(bodyJson["reportUrl"].Value<string>());
                 var request = new RestRequest(string.Empty);
 
-                Console.WriteLine(id);
-
                 byte[] bs = client.DownloadData(request);
                 string report = System.Text.Encoding.Default.GetString(bs);
                 await _hubContext.Clients.Client(id).SendAsync("onComplete", report);
+
+                ObjectsApi objectsApi = new ObjectsApi();
+                dynamic signedUrl = await objectsApi.CreateSignedResourceAsyncWithHttpInfo(NickName.ToLower() + "_designautomation", outputFileName, new PostBucketsSigned(10), "read");
+                await _hubContext.Clients.Client(id).SendAsync("downloadResult", (string)(signedUrl.Data.signedUrl));
             }
             catch (Exception e) { }
 

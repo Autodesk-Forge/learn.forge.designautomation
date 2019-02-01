@@ -23,7 +23,6 @@ $(document).ready(function () {
     $('#defineActivityShow').click(defineActivityModal);
     $('#createAppBundleActivity').click(createAppBundleActivity);
     $('#startWorkitem').click(startWorkitem);
-    $('#getResults').click(getResults);
 
     startConnection();
 });
@@ -138,20 +137,6 @@ function startWorkitem() {
     });
 }
 
-// KDV - URL probably needs better naming...
-function getResults() {
-    jQuery.ajax({
-        url: 'api/forge/dm/download',
-        method: 'GET',
-        success: function (res) {
-            writeLog('Result file copied here: ' + res);
-        },
-        error: function () {
-            alert('No Results were found. Make sure to run the workitem first and look at the log to ensure no errors.'); 
-        }
-    });
-}
-
 function writeLog(text) {
   $('#outputlog').append('<div style="border-top: 1px dashed #C0C0C0">' + text + '</div>');
   var elem = document.getElementById('outputlog');
@@ -173,8 +158,8 @@ function startConnection(onReady) {
                 });
         });
 
-    connection.on("onProgress", function (message) {
-        writeLog(message);
+    connection.on("downloadResult", function (url) {
+        writeLog('<a href="' + url +'">Download result file here</a>');
     });
 
     connection.on("onComplete", function (message) {
