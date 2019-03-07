@@ -151,7 +151,7 @@ namespace forgeSample.Controllers
         }
 
         /// <summary>
-        /// Define a new activity
+        /// Define a new appbundle
         /// </summary>
         [HttpPost]
         [Route("api/forge/designautomation/appbundles")]
