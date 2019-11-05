@@ -9,7 +9,7 @@ namespace forgeSample.Controllers
     {
         public static void Main(string[] args)
         {
-            CreateWebHostBuilder(args).ConfigureAppConfiguration(builder =>
+            CreateHostBuilder(args).ConfigureAppConfiguration(builder =>
             {
                 builder.AddForgeAlternativeEnvironmentVariables();
             }).ConfigureServices((hostContext, services) =>
@@ -18,7 +18,7 @@ namespace forgeSample.Controllers
             }).Build().Run();
         }
 
-        public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
+        public static IWebHostBuilder CreateHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
                 .UseStartup<Startup>();
     }

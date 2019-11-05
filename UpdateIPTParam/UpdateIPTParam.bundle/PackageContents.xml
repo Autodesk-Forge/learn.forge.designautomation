@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8" ?>
-<ApplicationPackage SchedmaVersion="1.0" Version="1.0" ProductCode="{84fef6aa-abf5-43be-b176-bb6f0c1d6680}" Name="InventorDesignAutomation" Description="Sample Plugin for Inventor" Author="learnforge.autodesk.io">
-    <CompanyDetails Name="Autodesk, Inc" Url="http://learnforge.autodesk.io" Email="forge.help@autodesk.com" />
-    <Components>
-        <RuntimeRequirements  SeriesMax="R23" SeriesMin="R23" OS="Win64" Platform="Inventor" />
-        <ComponentEntry LoadOnAutoCADStartup="False" LoadOnCommandInvocation="False" AppDescription="Inventor .NET App to update value of Assembly and Parts parameters" ModuleName="./Contents/Autodesk.UpdateIPTParam.Inventor.addin" AppName="Inventor for Design Automation"/>
-    </Components>
-</ApplicationPackage>
