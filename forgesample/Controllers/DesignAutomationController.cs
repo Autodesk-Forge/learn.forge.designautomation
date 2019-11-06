@@ -255,7 +255,7 @@ namespace forgeSample.Controllers
 
             // upload file to OSS Bucket
             // 1. ensure bucket existis
-            string bucketKey = NickName.ToLower() + "_designautomation";
+            string bucketKey = NickName.ToLower() + "-designautomation";
             BucketsApi buckets = new BucketsApi();
             buckets.Configuration.AccessToken = oauth.access_token;
             try
@@ -341,7 +341,7 @@ namespace forgeSample.Controllers
                 await _hubContext.Clients.Client(id).SendAsync("onComplete", report);
 
                 ObjectsApi objectsApi = new ObjectsApi();
-                dynamic signedUrl = await objectsApi.CreateSignedResourceAsyncWithHttpInfo(NickName.ToLower() + "_designautomation", outputFileName, new PostBucketsSigned(10), "read");
+                dynamic signedUrl = await objectsApi.CreateSignedResourceAsyncWithHttpInfo(NickName.ToLower() + "-designautomation", outputFileName, new PostBucketsSigned(10), "read");
                 await _hubContext.Clients.Client(id).SendAsync("downloadResult", (string)(signedUrl.Data.signedUrl));
             }
             catch (Exception e) { }
