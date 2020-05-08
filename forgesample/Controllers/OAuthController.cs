@@ -68,7 +68,7 @@ namespace forgeSample.Controllers
         /// </summary>
         public static string GetAppSetting(string settingKey)
         {
-            return Environment.GetEnvironmentVariable(settingKey);
+            return Environment.GetEnvironmentVariable(settingKey).Trim();
         }
     }
 }
