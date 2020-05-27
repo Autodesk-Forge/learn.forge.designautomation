@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
-  <assemblyIdentity name="UpdateIPTParam" version="1.0.0.0"></assemblyIdentity>
-  <clrClass clsid="{c803510f-2486-4dd7-b477-a236127d25ed}" progid="UpdateIPTParam.PluginServer" threadingModel="Both" name="UpdateIPTParam.PluginServer"></clrClass>
-  <file name="UpdateIPTParam.dll" hashalg="SHA1"></file>
-</assembly>
