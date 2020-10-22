@@ -115,19 +115,19 @@ class Utils {
             });
         if (engine.includes('AutoCAD'))
             return ({
-                commandLine: '$(engine.path)\\accoreconsole.exe /i $(args[inputFile].path) /al $(appbundles[{0}].path) /s $(settings[script].path)',
+                commandLine: '$(engine.path)\\accoreconsole.exe /i "$(args[inputFile].path)" /al $(appbundles[{0}].path) /s "$(settings[script].path)"',
                 extension: 'dwg',
                 script: "UpdateParam\n"
             });
         if (engine.includes('Inventor'))
             return ({
-                commandLine: '$(engine.path)\\InventorCoreConsole.exe /i $(args[inputFile].path) /al $(appbundles[{0}].path)',
+                commandLine: '$(engine.path)\\InventorCoreConsole.exe /i "$(args[inputFile].path)" /al "$(appbundles[{0}].path)"',
                 extension: 'ipt',
                 script: ''
             });
         if (engine.includes('Revit'))
             return ({
-                commandLine: '$(engine.path)\\revitcoreconsole.exe /i $(args[inputFile].path) /al $(appbundles[{0}].path)',
+                commandLine: '$(engine.path)\\revitcoreconsole.exe /i "$(args[inputFile].path)" /al "$(appbundles[{0}].path)"',
                 extension: 'rvt',
                 script: ''
             });
@@ -298,7 +298,7 @@ router.post('/forge/designautomation/appbundles', async /*CreateAppBundle*/ (req
         // update alias pointing to v+1
         const aliasSpec = //dav3.AliasPatch.constructFromObject({
         {
-            version: newAppVersion.Version
+            version: newAppVersion.version
         };
         try {
             const newAlias = await api.modifyAppBundleAlias(appBundleName, Utils.Alias, aliasSpec);
