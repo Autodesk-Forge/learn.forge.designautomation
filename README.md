@@ -41,6 +41,7 @@ Clone this project or download it. It's recommended to install [GitHub Desktop](
 
     git clone -b nodejs https://github.com/Autodesk-Forge/learn.forge.designautomation.git
 
+
 To run it, install the required packages, set the enviroment variables with your client ID, Secret and ngrok url and finally start it. Via command line, navigate to the folder where this repository was cloned to and use the following commands:
 
 Mac OSX/Linux (Terminal)

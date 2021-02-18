@@ -115,19 +115,19 @@ class Utils {
             });
         if (engine.includes('AutoCAD'))
             return ({
-                commandLine: '$(engine.path)\\accoreconsole.exe /i $(args[inputFile].path) /al $(appbundles[{0}].path) /s $(settings[script].path)',
+                commandLine: '$(engine.path)\\accoreconsole.exe /i "$(args[inputFile].path)" /al $(appbundles[{0}].path) /s "$(settings[script].path)"',
                 extension: 'dwg',
                 script: "UpdateParam\n"
             });
         if (engine.includes('Inventor'))
             return ({
-                commandLine: '$(engine.path)\\InventorCoreConsole.exe /i $(args[inputFile].path) /al $(appbundles[{0}].path)',
+                commandLine: '$(engine.path)\\InventorCoreConsole.exe /i "$(args[inputFile].path)" /al "$(appbundles[{0}].path)"',
                 extension: 'ipt',
                 script: ''
             });
         if (engine.includes('Revit'))
             return ({
-                commandLine: '$(engine.path)\\revitcoreconsole.exe /i $(args[inputFile].path) /al $(appbundles[{0}].path)',
+                commandLine: '$(engine.path)\\revitcoreconsole.exe /i "$(args[inputFile].path)" /al "$(appbundles[{0}].path)"',
                 extension: 'rvt',
                 script: ''
             });
@@ -305,7 +305,7 @@ router.post('/forge/designautomation/appbundles', async /*CreateAppBundle*/ (req
         // update alias pointing to v+1
         const aliasSpec = //dav3.AliasPatch.constructFromObject({
         {
-            version: newAppVersion.Version
+            version: newAppVersion.version
         };
         try {
             const newAlias = await api.modifyAppBundleAlias(appBundleName, Utils.Alias, aliasSpec);
@@ -625,7 +625,7 @@ router.post('/forge/callback/designautomation', async /*OnCallback*/ (req, res) 
         http.get(
             bodyJson.reportUrl,
             response => {
-                //socketIO.emit('onComplete', response);
+                //socketIO.to(req.query.id).emit('onComplete', response);
                 response.setEncoding('utf8');
                 let rawData = '';
                 response.on('data', (chunk) => {
@@ -636,7 +636,7 @@ router.post('/forge/callback/designautomation', async /*OnCallback*/ (req, res) 
                 });
             }
         );
-        //socketIO.emit('downloadReport', bodyJson.reportUrl);
+        //socketIO.to(req.query.id).emit('downloadReport', bodyJson.reportUrl);
 
         const objectsApi = new ForgeAPI.ObjectsApi();
         const bucketKey = Utils.NickName.toLowerCase() + '-designautomation';
@@ -653,10 +653,10 @@ router.post('/forge/callback/designautomation', async /*OnCallback*/ (req, res) 
                 },
                     req.oauth_client, req.oauth_token
                 );
-                socketIO.emit('downloadResult', signedUrl.body.signedUrl);
+                socketIO.to(req.query.id).emit('downloadResult', signedUrl.body.signedUrl);
             } catch (ex) {
                 console.error(ex);
-                socketIO.emit('onComplete', 'Failed to create presigned URL for outputFile.\nYour outputFile is available in your OSS bucket.');
+                socketIO.to(req.query.id).emit('onComplete', 'Failed to create presigned URL for outputFile.\nYour outputFile is available in your OSS bucket.');
             }
         }
 
