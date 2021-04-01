@@ -218,7 +218,7 @@ namespace forgeSample.Controllers
             foreach (KeyValuePair<string, string> x in newAppVersion.UploadParameters.FormData) request.AddParameter(x.Key, x.Value);
             request.AddFile("file", packageZipPath);
             request.AddHeader("Cache-Control", "no-cache");
-            await uploadClient.ExecuteTaskAsync(request);
+            await uploadClient.ExecuteAsync(request);
 
             return Ok(new { AppBundle = qualifiedAppBundleId, Version = newAppVersion.Version });
         }
@@ -358,12 +358,19 @@ namespace forgeSample.Controllers
         public async Task<List<string>> GetAvailableEngines()
         {
             dynamic oauth = await OAuthController.GetInternalAsync();
-
+            List<string> allEngines = new List<string>();
             // define Engines API
-            Page<string> engines = await _designAutomation.GetEnginesAsync();
-            engines.Data.Sort();
-
-            return engines.Data; // return list of engines
+            string paginationToken = null;
+            while (true)
+            {
+                Page<string> engines = await _designAutomation.GetEnginesAsync(paginationToken);
+                allEngines.AddRange(engines.Data);
+                if (engines.PaginationToken == null)
+                    break;
+                paginationToken = engines.PaginationToken;
+            } 
+            allEngines.Sort();
+            return allEngines; // return list of engines
         }
 
         /// <summary>
