@@ -19,7 +19,7 @@ See other projects for bundles.
 
 ## Thumbnail
 
-![thumbnail](../thumbnail.gif)
+![thumbnail](thumbnail.gif)
 
 # Setup
 
