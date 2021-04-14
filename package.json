@@ -1,22 +1,26 @@
 {
-  "name": "forgesample",
+  "name": "learnforgedesignautoamtion",
   "version": "1.0.0",
-  "description": "first da tutorial",
+  "description": "Learn Forge Tutorial - Design Automation sample",
   "main": "start.js",
   "scripts": {
     "start": "node start.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Varun Patil",
-  "license": "ISC",
+  "author": "Cyrille Fauvel",
+  "contributors": [
+    "Cyrille Fauvel",
+    "Varun Patil"
+  ],
+  "license": "MIT",
   "dependencies": {
     "autodesk.forge.designautomation": "^3.0.3",
     "body-parser": "^1.19.0",
     "cookie-session": "^1.4.0",
     "express": "^4.17.1",
-    "forge-apis": "^0.7.3",
-    "form-data": "^3.0.0",
+    "forge-apis": "^0.8.5",
+    "form-data": "^4.0.0",
     "multer": "^1.4.2",
-    "socket.io": "^2.3.0"
+    "socket.io": "^4.0.1"
   }
 }

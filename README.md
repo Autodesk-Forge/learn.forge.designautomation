@@ -102,4 +102,6 @@ Please see the [LICENSE](LICENSE) file for full details.
 
 ## Written by
 
-Cyrille Fauvel [@FAUVELCyrille](https://twitter.com/FAUVELCyrille), [Forge Partner Development](http://forge.autodesk.com)
+Cyrille Fauvel  
+[@FAUVELCyrille](https://twitter.com/FAUVELCyrille),  
+[Forge Partner Development](http://forge.autodesk.com)

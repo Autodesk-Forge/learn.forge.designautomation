@@ -15,7 +15,6 @@ app.use(cookieSession({
 app.use(express.json({
     limit: '50mb'
 }));
-// app.use('/api/forge', require('./routes/common/oauth'));
 app.use('/api', require('./routes/DesignAutomation'));
 
 app.set('port', process.env.PORT || 3000);

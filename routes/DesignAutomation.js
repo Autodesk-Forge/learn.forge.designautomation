@@ -8,10 +8,7 @@ const formdata = require('form-data');
 const bodyParser = require('body-parser');
 const multer = require('multer');
 const router = express.Router();
-const {
-    getClient,
-    getInternalToken
-} = require('./common/oauth');
+const { getClient } = require('./common/oauth');
 const config = require('../config');
 const dav3 = require('autodesk.forge.designautomation');
 const ForgeAPI = require('forge-apis');
@@ -109,13 +106,13 @@ class Utils {
     static EngineAttributes (engine) {
         if (engine.includes('3dsMax'))
             return ({
-                commandLine: '$(engine.path)\\3dsmaxbatch.exe -sceneFile $(args[inputFile].path) $(settings[script].path)',
+                commandLine: '$(engine.path)\\3dsmaxbatch.exe -sceneFile "$(args[inputFile].path)" "$(settings[script].path)"',
                 extension: 'max',
                 script: "da = dotNetClass(\'Autodesk.Forge.Sample.DesignAutomation.Max.RuntimeExecute\')\nda.ModifyWindowWidthHeight()\n"
             });
         if (engine.includes('AutoCAD'))
             return ({
-                commandLine: '$(engine.path)\\accoreconsole.exe /i "$(args[inputFile].path)" /al $(appbundles[{0}].path) /s "$(settings[script].path)"',
+                commandLine: '$(engine.path)\\accoreconsole.exe /i "$(args[inputFile].path)" /al "$(appbundles[{0}].path)" /s "$(settings[script].path)"',
                 extension: 'dwg',
                 script: "UpdateParam\n"
             });
