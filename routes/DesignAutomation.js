@@ -27,7 +27,7 @@ let dav3Instance = null;
 
 class Utils {
 
-    static async Instance () {
+    static async Instance() {
         if (dav3Instance === null) {
             // Here it is ok to not await since we awaited in the call router.use()
             dav3Instance = new dav3.AutodeskForgeDesignAutomationClient(config.client);
@@ -47,28 +47,28 @@ class Utils {
     /// <summary>
     /// Returns the directory where bindles are stored on the local machine.
     /// </summary>
-    static get LocalBundlesFolder () {
+    static get LocalBundlesFolder() {
         return (_path.resolve(_path.join(__dirname, '../', 'bundles')));
     }
 
     /// <summary>
     /// Prefix for AppBundles and Activities
     /// </summary>
-    static get NickName () {
+    static get NickName() {
         return (config.credentials.client_id);
     }
 
     /// <summary>
     /// Alias for the app (e.g. DEV, STG, PROD). This value may come from an environment variable
     /// </summary>
-    static get Alias () {
+    static get Alias() {
         return ('dev');
     }
 
     /// <summary>
     /// Search files in a folder and filter them.
     /// </summary>
-    static async findFiles (dir, filter) {
+    static async findFiles(dir, filter) {
         return (new Promise((fulfill, reject) => {
             _fs.readdir(dir, (err, files) => {
                 if (err)
@@ -89,7 +89,7 @@ class Utils {
     /// <summary>
     /// Create a new DAv3 client/API with default settings
     /// </summary>
-    static async dav3API (oauth2) {
+    static async dav3API(oauth2) {
         // There is 2 alternatives to setup an API instance, providing the access_token directly
         // let apiClient2 = new dav3.AutodeskForgeDesignAutomationClient(/*config.client*/);
         // apiClient2.authManager.authentications['2-legged'].accessToken = oauth2.access_token;
@@ -103,7 +103,7 @@ class Utils {
     /// <summary>
     /// Helps identify the engine
     /// </summary>
-    static EngineAttributes (engine) {
+    static EngineAttributes(engine) {
         if (engine.includes('3dsMax'))
             return ({
                 commandLine: '$(engine.path)\\3dsmaxbatch.exe -sceneFile "$(args[inputFile].path)" "$(settings[script].path)"',
@@ -132,7 +132,7 @@ class Utils {
         throw new Error('Invalid engine');
     }
 
-    static FormDataLength (form) {
+    static FormDataLength(form) {
         return (new Promise((fulfill, reject) => {
             form.getLength((err, length) => {
                 if (err)
@@ -145,7 +145,7 @@ class Utils {
     /// <summary>
     /// Upload a file
     /// </summary>
-    static uploadFormDataWithFile (filepath, endpoint, params = null) {
+    static uploadFormDataWithFile(filepath, endpoint, params = null) {
         return (new Promise(async (fulfill, reject) => {
             const fileStream = _fs.createReadStream(filepath);
 
@@ -185,7 +185,7 @@ class Utils {
 /// <summary>
 /// Names of app bundles on this project
 /// </summary>
-router.get('/appbundles', async /*GetLocalBundles*/ (req, res) => {
+router.get('/appbundles', async /*GetLocalBundles*/(req, res) => {
     // this folder is placed under the public folder, which may expose the bundles
     // but it was defined this way so it be published on most hosts easily
     let bundles = await Utils.findFiles(Utils.LocalBundlesFolder, '.zip');
@@ -196,14 +196,14 @@ router.get('/appbundles', async /*GetLocalBundles*/ (req, res) => {
 /// <summary>
 /// Return a list of available engines
 /// </summary>
-router.get('/forge/designautomation/engines', async /*GetAvailableEngines*/ (req, res) => {
+router.get('/forge/designautomation/engines', async /*GetAvailableEngines*/(req, res) => {
     let that = this;
     let Allengines = [];
     let paginationToken = null;
     try {
         const api = await Utils.dav3API(req.oauth_token);
         while (true) {
-            let engines = await api.getEngines({'page':paginationToken});
+            let engines = await api.getEngines({ 'page': paginationToken });
             Allengines = Allengines.concat(engines.data)
             if (engines.paginationToken == null) break;
             paginationToken = engines.paginationToken;
@@ -219,7 +219,7 @@ router.get('/forge/designautomation/engines', async /*GetAvailableEngines*/ (req
 /// <summary>
 /// Define a new appbundle
 /// </summary>
-router.post('/forge/designautomation/appbundles', async /*CreateAppBundle*/ (req, res) => {
+router.post('/forge/designautomation/appbundles', async /*CreateAppBundle*/(req, res) => {
     const appBundleSpecs = req.body;
 
     // basic input validation
@@ -348,7 +348,7 @@ router.post('/forge/designautomation/appbundles', async /*CreateAppBundle*/ (req
 /// <summary>
 /// CreateActivity a new Activity
 /// </summary>
-router.post('/forge/designautomation/activities', async /*CreateActivity*/ (req, res) => {
+router.post('/forge/designautomation/activities', async /*CreateActivity*/(req, res) => {
     const activitySpecs = req.body;
 
     // basic input validation
@@ -450,7 +450,7 @@ router.post('/forge/designautomation/activities', async /*CreateActivity*/ (req,
 /// <summary>
 /// Get all Activities defined for this account
 /// </summary>
-router.get('/forge/designautomation/activities', async /*GetDefinedActivities*/ (req, res) => {
+router.get('/forge/designautomation/activities', async /*GetDefinedActivities*/(req, res) => {
     const api = await Utils.dav3API(req.oauth_token);
     // filter list of 
     let activities = null;
@@ -473,11 +473,31 @@ router.get('/forge/designautomation/activities', async /*GetDefinedActivities*/ 
 });
 
 /// <summary>
+/// Direct To S3
+/// </summary>
+const prepareInputUrl = async (bucketKey, objectKey, opts, oAuthClient, oAuthToken) => {
+    let objectS3Download = await new ForgeAPI.ObjectsApi().getS3DownloadURL(bucketKey, objectKey,
+        opts,
+        oAuthClient, oAuthToken);
+    return (objectS3Download.body.url);
+
+}
+const prepareOutputUrl = async (bucketKey, objectKey, opts, oAuthClient, oAuthToken) => {
+
+    let objectS3Upload = await new ForgeAPI.ObjectsApi().getS3UploadURL(bucketKey, objectKey,
+        opts,
+        oAuthClient, oAuthToken);
+    return ({
+        outputUrl: objectS3Upload.body.urls[0],
+        uploadKey: objectS3Upload.body.uploadKey
+    });
+}
+/// <summary>
 /// Start a new workitem
 /// </summary>
 router.post('/forge/designautomation/workitems', multer({
     dest: 'uploads/'
-}).single('inputFile'), async /*StartWorkitem*/ (req, res) => {
+}).single('inputFile'), async /*StartWorkitem*/(req, res) => {
     const input = req.body;
 
     // basic input validation
@@ -507,7 +527,20 @@ router.post('/forge/designautomation/workitems', multer({
     const inputFileNameOSS = `${new Date().toISOString().replace(/[-T:\.Z]/gm, '').substring(0, 14)}_input_${_path.basename(req.file.originalname)}`; // avoid overriding
     try {
         let contentStream = _fs.createReadStream(req.file.path);
-        await new ForgeAPI.ObjectsApi().uploadObject(bucketKey, inputFileNameOSS, req.file.size, contentStream, {}, req.oauth_client, req.oauth_token);
+        await new ForgeAPI.ObjectsApi().uploadResources(
+            bucketKey,
+            {
+                objectKey: inputFileNameOSS,
+                data: contentStream,
+                length: req.file.size
+            },
+            {
+                useAcceleration: false,
+                minutesExpiration: 20,
+                onUploadProgress: (data) => console.warn(data)
+            },
+            req.oauth_client, req.oauth_token,
+        );
     } catch (ex) {
         console.error(ex);
         return (res.status(500).json({
@@ -518,10 +551,12 @@ router.post('/forge/designautomation/workitems', multer({
     // prepare workitem arguments
     // 1. input file
     const inputFileArgument = {
-        url: `https://developer.api.autodesk.com/oss/v2/buckets/${bucketKey}/objects/${inputFileNameOSS}`,
-        headers: {
-            Authorization: `Bearer ${req.oauth_token.access_token}`
-        }
+        url: await prepareInputUrl(bucketKey, inputFileNameOSS,
+            {
+                useAcceleration: false,
+                minutesExpiration: 60/*intentionaly kept max duration, this url will be sent to DA service*/
+            },
+            req.oauth_client, req.oauth_token)
     };
     // 2. input json
     const inputJson = {
@@ -532,32 +567,18 @@ router.post('/forge/designautomation/workitems', multer({
         url: "data:application/json, " + JSON.stringify(inputJson).replace(/"/g, "'")
     };
     // 3. output file
-    // const outputFileNameOSS = `${new Date().toISOString().replace (/[-T:\.Z]/gm, '').substring(0, 14)}_output_${_path.basename(req.file.originalname)}`; // avoid overriding
-    // const outputFileArgument = {
-    //     url: `https://developer.api.autodesk.com/oss/v2/buckets/${bucketKey}/objects/${outputFileNameOSS}`,
-    //     verb: dav3.Verb.put,
-    //     headers: {
-    //         Authorization: `Bearer ${req.oauth_token.access_token}`
-    //     }
-    // };
-
-    // Better to use a presigned url to avoid the token to expire
     const outputFileNameOSS = `${new Date().toISOString().replace(/[-T:\.Z]/gm, '').substring(0, 14)}_output_${_path.basename(req.file.originalname)}`; // avoid overriding
     let signedUrl = null;
+    let s3UploadObject = null;
     try {
         // write signed resource requires the object to already exist :(
-        await new ForgeAPI.ObjectsApi().copyTo(bucketKey, inputFileNameOSS, outputFileNameOSS, req.oauth_client, req.oauth_token);
-        signedUrl = await new ForgeAPI.ObjectsApi().createSignedResource(
-            bucketKey,
-            outputFileNameOSS, {
-            minutesExpiration: 60,
-            singleUse: true
-        }, {
-            access: 'write'
-        },
-            req.oauth_client, req.oauth_token
-        );
-        signedUrl = signedUrl.body.signedUrl;
+        s3UploadObject = await prepareOutputUrl(bucketKey, outputFileNameOSS,
+            {
+                useAcceleration: false,
+                minutesExpiration: 60/*intentionaly kept max duration, this url will be sent to DA service*/
+            },
+            req.oauth_client, req.oauth_token);
+        signedUrl = s3UploadObject.outputUrl;
     } catch (ex) {
         console.error(ex);
         return (res.status(500).json({
@@ -565,18 +586,13 @@ router.post('/forge/designautomation/workitems', multer({
         }));
     }
     const outputFileArgument = {
-        //url: `https://developer.api.autodesk.com/oss/v2/buckets/${bucketKey}/objects/${outputFileNameOSS}`,
         url: signedUrl,
-        headers: {
-            Authorization: '',
-            'Content-type': 'application/octet-stream'
-        },
         verb: dav3.Verb.put,
     };
 
     // prepare & submit workitem
     // the callback contains the connectionId (used to identify the client) and the outputFileName of this workitem
-    const callbackUrl = `${config.credentials.webhook_url}/api/forge/callback/designautomation?id=${browerConnectionId}&outputFileName=${outputFileNameOSS}&inputFileName=${inputFileNameOSS}`;
+    const callbackUrl = `${config.credentials.webhook_url}/api/forge/callback/designautomation?id=${browerConnectionId}&outputFileName=${outputFileNameOSS}&inputFileName=${inputFileNameOSS}&uploadKey=${s3UploadObject.uploadKey}`;
     const workItemSpec = {
         activityId: activityName,
         arguments: {
@@ -607,7 +623,7 @@ router.post('/forge/designautomation/workitems', multer({
 /// <summary>
 /// Callback from Design Automation Workitem (onProgress or onComplete)
 /// </summary>
-router.post('/forge/callback/designautomation', async /*OnCallback*/ (req, res) => {
+router.post('/forge/callback/designautomation', async /*OnCallback*/(req, res) => {
     // your webhook should return immediately! we could use Hangfire to schedule a job instead
     // ALWAYS return ok (200)
     res.status(200).end();
@@ -639,18 +655,16 @@ router.post('/forge/callback/designautomation', async /*OnCallback*/ (req, res) 
         const bucketKey = Utils.NickName.toLowerCase() + '-designautomation';
         if (bodyJson.status === 'success') {
             try {
-                // generate a signed URL to download the result file and send to the client
-                const signedUrl = await objectsApi.createSignedResource(
-                    bucketKey,
-                    req.query.outputFileName, {
-                    minutesExpiration: 10,
-                    singleUse: false
-                }, {
-                    access: 'read'
-                },
-                    req.oauth_client, req.oauth_token
-                );
-                socketIO.to(req.query.id).emit('downloadResult', signedUrl.body.signedUrl);
+                //Complete the upload to S3
+                await objectsApi.completeS3Upload(bucketKey, req.query.outputFileName,
+                    { uploadKey: req.query.uploadKey },
+                    { useAcceleration: false, minutesExpiration: 2 },
+                    req.oauth_client, req.oauth_token);
+                //create a S3 presigned URL and send to client
+                let response = await objectsApi.getS3DownloadURL(bucketKey, req.query.outputFileName,
+                    { useAcceleration: false, minutesExpiration: 15 },
+                    req.oauth_client, req.oauth_token);
+                socketIO.to(req.query.id).emit('downloadResult', response.body.url);
             } catch (ex) {
                 console.error(ex);
                 socketIO.to(req.query.id).emit('onComplete', 'Failed to create presigned URL for outputFile.\nYour outputFile is available in your OSS bucket.');
@@ -673,7 +687,7 @@ router.post('/forge/callback/designautomation', async /*OnCallback*/ (req, res) 
 /// <summary>
 /// Clear the accounts (for debugging purpouses)
 /// </summary>
-router.delete('/forge/designautomation/account', async /*ClearAccount*/ (req, res) => {
+router.delete('/forge/designautomation/account', async /*ClearAccount*/(req, res) => {
     let api = await Utils.dav3API(req.oauth_token);
     // clear account
     await api.deleteForgeApp('me');
