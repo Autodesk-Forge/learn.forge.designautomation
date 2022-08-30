@@ -7,7 +7,7 @@
         <Folder Include="wwwroot\bundles\" />
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="Autodesk.Forge" Version="1.8.0" />
+        <PackageReference Include="Autodesk.Forge" Version="1.9.1" />
         <PackageReference Include="Autodesk.Forge.DesignAutomation" Version="3.0.2" />
         <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.10" />
         <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson" Version="3.1.10" />

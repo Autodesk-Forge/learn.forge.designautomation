@@ -17,6 +17,7 @@
 /////////////////////////////////////////////////////////////////////
 
 using Autodesk.Forge;
+using Autodesk.Forge.Client;
 using Autodesk.Forge.DesignAutomation;
 using Autodesk.Forge.DesignAutomation.Model;
 using Autodesk.Forge.Model;
@@ -31,6 +32,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Activity = Autodesk.Forge.DesignAutomation.Model.Activity;
 using Alias = Autodesk.Forge.DesignAutomation.Model.Alias;
@@ -49,14 +51,24 @@ namespace forgeSample.Controllers
         private IWebHostEnvironment _env;
         // used to access the SignalR Hub
         private IHubContext<DesignAutomationHub> _hubContext;
+        // used to store the s3 upload payload;
+        private static PostCompleteS3UploadPayload _postCompleteS3UploadPayload;
         // Local folder for bundles
         public string LocalBundlesFolder { get { return Path.Combine(_env.WebRootPath, "bundles"); } }
         /// Prefix for AppBundles and Activities
         public static string NickName { get { return OAuthController.GetAppSetting("FORGE_CLIENT_ID"); } }
         /// Alias for the app (e.g. DEV, STG, PROD). This value may come from an environment variable
         public static string Alias { get { return "dev"; } }
+
+        //This property manager S3 Upload Payload
+        public static PostCompleteS3UploadPayload S3UploadPayload
+        {
+            get { return _postCompleteS3UploadPayload; }
+            set { _postCompleteS3UploadPayload = value; }
+        }
         // Design Automation v3 API
         DesignAutomationClient _designAutomation;
+
 
         // Constructor, where env and hubContext are specified
         public DesignAutomationController(IWebHostEnvironment env, IHubContext<DesignAutomationHub> hubContext, DesignAutomationClient api)
@@ -211,14 +223,29 @@ namespace forgeSample.Controllers
                 Alias newAlias = await _designAutomation.ModifyAppBundleAliasAsync(appBundleName, Alias, aliasSpec);
             }
 
-            // upload the zip with .bundle
-            RestClient uploadClient = new RestClient(newAppVersion.UploadParameters.EndpointURL);
-            RestRequest request = new RestRequest(string.Empty, Method.POST);
-            request.AlwaysMultipartFormData = true;
-            foreach (KeyValuePair<string, string> x in newAppVersion.UploadParameters.FormData) request.AddParameter(x.Key, x.Value);
-            request.AddFile("file", packageZipPath);
-            request.AddHeader("Cache-Control", "no-cache");
-            await uploadClient.ExecuteAsync(request);
+            // upload the zip with .bundle            
+            using (var client = new HttpClient())
+            {
+                using (var formData = new MultipartFormDataContent())
+                {
+                    foreach (var kv in newAppVersion.UploadParameters.FormData)
+                    {
+                        if (kv.Value != null)
+                        {
+                            formData.Add(new StringContent(kv.Value), kv.Key);
+                        }
+                    }
+                    using (var content = new StreamContent(new FileStream(packageZipPath, FileMode.Open)))
+                    {
+                        formData.Add(content, "file");
+                        using (var request = new HttpRequestMessage(HttpMethod.Post, newAppVersion.UploadParameters.EndpointURL) { Content = formData })
+                        {
+                            var response = await client.SendAsync(request);
+                            response.EnsureSuccessStatusCode();
+                        }
+                    }
+                }
+            }
 
             return Ok(new { AppBundle = qualifiedAppBundleId, Version = newAppVersion.Version });
         }
@@ -231,6 +258,86 @@ namespace forgeSample.Controllers
             public IFormFile inputFile { get; set; }
             public string data { get; set; }
         }
+
+
+        public static bool HttpErrorHandler(ApiResponse<dynamic> response, string msg = "", bool bThrowException = true)
+        {
+            if (response.StatusCode < 200 || response.StatusCode >= 300)
+            {
+                if (bThrowException)
+                    throw new Exception(msg + " (HTTP " + response.StatusCode + ")");
+                return (true);
+            }
+            return (false);
+        }
+        private async static Task<string> PrepareInputUrl(string bucketKey, string objectKey, dynamic oauth, string fileSavePath)
+        {
+
+            try
+            {
+                ObjectsApi objectsAPI = new ObjectsApi();
+                objectsAPI.Configuration.AccessToken = oauth.access_token;
+                ApiResponse<dynamic> response = await objectsAPI.getS3UploadURLAsyncWithHttpInfo(bucketKey, objectKey,
+                    new Dictionary<string, object> {
+                    { "minutesExpiration", 60.0 },
+                    { "useCdn", true }
+                    });
+                HttpErrorHandler(response, $"Failed to get S3 upload url");
+                // save the file on the server                
+                using (var stream = new FileStream(fileSavePath, FileMode.Open))
+                {
+                    HttpClient httpClient = new HttpClient();
+                    StreamContent streamContent = new StreamContent(stream);
+                    HttpResponseMessage res = await httpClient.PutAsync(response.Data["urls"][0], streamContent);
+                    res.EnsureSuccessStatusCode();
+                    var postCompleteS3UploadBody = new PostCompleteS3UploadPayload(response.Data.uploadKey, (int)stream.Length);
+                    response = await objectsAPI.completeS3UploadAsyncWithHttpInfo(bucketKey, objectKey, postCompleteS3UploadBody);
+                    HttpErrorHandler(response, $"Failed to complete S3 upload");
+                    Console.WriteLine($"Completed Posting to {response.Data.location}");
+                }
+                response = await objectsAPI.getS3DownloadURLAsyncWithHttpInfo(bucketKey, objectKey, new Dictionary<string, object> {
+                    { "minutesExpiration", 60.0 },
+                    { "useCdn", true }
+                });
+                HttpErrorHandler(response, $"Failed to get S3 download url");
+                return response.Data.url;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception when preparing input url:{ex.Message}");
+                throw;
+            }
+        }
+
+        private static async Task<string> PrepareOutputUrl(string bucketKey, string objectKey, dynamic oauth)
+        {
+
+            try
+            {
+                ObjectsApi objectsAPI = new ObjectsApi();
+                objectsAPI.Configuration.AccessToken = oauth.access_token;
+              
+                ApiResponse<dynamic> response = await objectsAPI.getS3UploadURLAsyncWithHttpInfo(bucketKey, objectKey,
+                     new Dictionary<string, object> {
+                    { "minutesExpiration", 60.0 },/*Kept large value intentionally*/
+                    { "useCdn", true } /*to get cloudfront url*/
+                     });
+                HttpErrorHandler(response, $"Failed to get S3 upload url");
+                //We need s3 upload payload to finalize the upload
+                PostCompleteS3UploadPayload payload = new PostCompleteS3UploadPayload(response.Data.uploadKey, null);
+                S3UploadPayload = payload;
+                string url = response.Data["urls"][0];
+                return (url);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to prepare output argument :{ex.Message}");
+                throw;
+            }
+        }
+
+     
+
 
         /// <summary>
         /// Start a new workitem
@@ -265,23 +372,23 @@ namespace forgeSample.Controllers
             }
             catch { }; // in case bucket already exists
                        // 2. upload inputFile
-            string inputFileNameOSS = string.Format("{0}_input_{1}", DateTime.Now.ToString("yyyyMMddhhmmss"), Path.GetFileName(input.inputFile.FileName)); // avoid overriding
-            ObjectsApi objects = new ObjectsApi();
-            objects.Configuration.AccessToken = oauth.access_token;
-            using (StreamReader streamReader = new StreamReader(fileSavePath))
-                await objects.UploadObjectAsync(bucketKey, inputFileNameOSS, (int)streamReader.BaseStream.Length, streamReader.BaseStream, "application/octet-stream");
-            System.IO.File.Delete(fileSavePath);// delete server copy
 
+
+            string inputFileNameOSS = string.Format("{0}_input_{1}", DateTime.Now.ToString("yyyyMMddhhmmss"), Path.GetFileName(input.inputFile.FileName)); // avoid overriding
+            string inputUrl = await PrepareInputUrl(bucketKey, inputFileNameOSS, oauth, fileSavePath);
+
+            if (System.IO.File.Exists(fileSavePath))
+            {
+                System.IO.File.Delete(fileSavePath);
+            }
             // prepare workitem arguments
             // 1. input file
             XrefTreeArgument inputFileArgument = new XrefTreeArgument()
             {
-                Url = string.Format("https://developer.api.autodesk.com/oss/v2/buckets/{0}/objects/{1}", bucketKey, inputFileNameOSS),
-                Headers = new Dictionary<string, string>()
-                 {
-                     { "Authorization", "Bearer " + oauth.access_token }
-                 }
+                Url = inputUrl                
             };
+
+
             // 2. input json
             dynamic inputJson = new JObject();
             inputJson.Width = widthParam;
@@ -290,16 +397,15 @@ namespace forgeSample.Controllers
             {
                 Url = "data:application/json, " + ((JObject)inputJson).ToString(Formatting.None).Replace("\"", "'")
             };
+
+
             // 3. output file
             string outputFileNameOSS = string.Format("{0}_output_{1}", DateTime.Now.ToString("yyyyMMddhhmmss"), Path.GetFileName(input.inputFile.FileName)); // avoid overriding
+            string outputUrl = await PrepareOutputUrl(bucketKey, outputFileNameOSS, oauth);
             XrefTreeArgument outputFileArgument = new XrefTreeArgument()
             {
-                Url = string.Format("https://developer.api.autodesk.com/oss/v2/buckets/{0}/objects/{1}", bucketKey, outputFileNameOSS),
-                Verb = Verb.Put,
-                Headers = new Dictionary<string, string>()
-                   {
-                       {"Authorization", "Bearer " + oauth.access_token }
-                   }
+                Url = outputUrl,
+                Verb = Verb.Put                
             };
 
             // prepare & submit workitem
@@ -333,18 +439,38 @@ namespace forgeSample.Controllers
                 JObject bodyJson = JObject.Parse((string)body.ToString());
                 await _hubContext.Clients.Client(id).SendAsync("onComplete", bodyJson.ToString());
 
-                var client = new RestClient(bodyJson["reportUrl"].Value<string>());
-                var request = new RestRequest(string.Empty);
+                using (var httpClient = new HttpClient())
+                {
+                    byte[] bs = await httpClient.GetByteArrayAsync(bodyJson["reportUrl"].Value<string>());
+                    string report = System.Text.Encoding.Default.GetString(bs);
+                    await _hubContext.Clients.Client(id).SendAsync("onComplete", report);
+                }
 
-                byte[] bs = client.DownloadData(request);
-                string report = System.Text.Encoding.Default.GetString(bs);
-                await _hubContext.Clients.Client(id).SendAsync("onComplete", report);
+                // OAuth token
+                dynamic oauth = await OAuthController.GetInternalAsync();
 
                 ObjectsApi objectsApi = new ObjectsApi();
-                dynamic signedUrl = await objectsApi.CreateSignedResourceAsyncWithHttpInfo(NickName.ToLower() + "-designautomation", outputFileName, new PostBucketsSigned(10), "read");
-                await _hubContext.Clients.Client(id).SendAsync("downloadResult", (string)(signedUrl.Data.signedUrl));
+                objectsApi.Configuration.AccessToken = oauth.access_token;
+
+                //finalize upload in the callback.
+                ApiResponse<dynamic> res = await objectsApi.completeS3UploadAsyncWithHttpInfo(NickName.ToLower() + "-designautomation", outputFileName, S3UploadPayload, new Dictionary<string, object> {
+                { "minutesExpiration", 2.0 },
+                { "useCdn", true }
+                });
+                HttpErrorHandler(res, $"Failed to complete S3 posting");
+
+                res = await objectsApi.getS3DownloadURLAsyncWithHttpInfo(NickName.ToLower() + "-designautomation", outputFileName, new Dictionary<string, object> {
+                { "minutesExpiration", 15.0 },
+                { "useCdn", true }
+                });
+                await _hubContext.Clients.Client(id).SendAsync("downloadResult", (string)(res.Data.url));
+                Console.WriteLine("Congrats!");
+
             }
-            catch (Exception e) { }
+            catch(Exception ex){
+
+                Console.WriteLine(ex.Message);
+            }
 
             // ALWAYS return ok (200)
             return Ok();
@@ -405,5 +531,7 @@ namespace forgeSample.Controllers
     {
         public string GetConnectionId() { return Context.ConnectionId; }
     }
+
+
 
 }
